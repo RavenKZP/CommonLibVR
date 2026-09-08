@@ -1,3 +1,92 @@
+## [5.0.0](https://github.com/RavenKZP/CommonLibVR/compare/v4.19.0...v5.0.0) (2026-09-08)
+
+### ⚠ BREAKING CHANGES
+
+* **state:** direct state->frameCount / ->insideFrame / ->useEarlyZ access no longer compiles on ENABLE_SKYRIM_AE builds; use State::GetFrameCount() / GetInsideFrame() / GetUseEarlyZ() instead.
+
+Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>
+* **vr:** safe VR/AE runtime-data accessors (#253)
+* **license:** relicense to GPL-3.0-or-later (#238)
+
+### Features
+
+* **actor:** add PlayerCharacter::StartWaiting/Actor::StartSleeping ([#331](https://github.com/RavenKZP/CommonLibVR/issues/331)) ([8492509](https://github.com/RavenKZP/CommonLibVR/commit/84925090fc813f70686c27fae650933453af574e))
+* add BSQueuedResourceCollectionBase header ([#271](https://github.com/RavenKZP/CommonLibVR/issues/271)) ([1efbde4](https://github.com/RavenKZP/CommonLibVR/commit/1efbde45fa8792d5b3fc6030d8b9ead096466446))
+* add BSTask header ([#267](https://github.com/RavenKZP/CommonLibVR/issues/267)) ([597915f](https://github.com/RavenKZP/CommonLibVR/commit/597915f9061420b24810c7729786446b52805f35))
+* add IOManager header ([#272](https://github.com/RavenKZP/CommonLibVR/issues/272)) ([8ebe211](https://github.com/RavenKZP/CommonLibVR/commit/8ebe2111c792ce8b457692b953e08b9a36caa757))
+* add IOTask header ([#269](https://github.com/RavenKZP/CommonLibVR/issues/269)) ([b0f9a9a](https://github.com/RavenKZP/CommonLibVR/commit/b0f9a9aee5ce345ac6632be42999df69e359e7a7)), closes [#267](https://github.com/RavenKZP/CommonLibVR/issues/267) [#267](https://github.com/RavenKZP/CommonLibVR/issues/267)
+* add land collision Cinfo types ([#288](https://github.com/RavenKZP/CommonLibVR/issues/288)) ([b75e579](https://github.com/RavenKZP/CommonLibVR/commit/b75e5795add8efc38c40545b0263df25db6a5a67))
+* add LoadedAreaBound header ([#266](https://github.com/RavenKZP/CommonLibVR/issues/266)) ([a03053d](https://github.com/RavenKZP/CommonLibVR/commit/a03053d8584eefaba881e2ca69f2f5ddfa4b14e0)), closes [#264](https://github.com/RavenKZP/CommonLibVR/issues/264) [#264](https://github.com/RavenKZP/CommonLibVR/issues/264) [alandtse/skyrim_vr_address_library#156](https://github.com/alandtse/skyrim_vr_address_library/issues/156)
+* add QueuedFile header ([#270](https://github.com/RavenKZP/CommonLibVR/issues/270)) ([4f454d8](https://github.com/RavenKZP/CommonLibVR/commit/4f454d88788fcb1d654b20a2b4013b49abdd3e51)), closes [#269](https://github.com/RavenKZP/CommonLibVR/issues/269) [#267](https://github.com/RavenKZP/CommonLibVR/issues/267)
+* **cmake:** add Linux-host cross-compile support via clang-cl+xwin ([#302](https://github.com/RavenKZP/CommonLibVR/issues/302)) ([848b3f9](https://github.com/RavenKZP/CommonLibVR/commit/848b3f9daace475aa49f539dee0c91c8e313b359)), closes [#300](https://github.com/RavenKZP/CommonLibVR/issues/300) [#215](https://github.com/RavenKZP/CommonLibVR/issues/215) [#215](https://github.com/RavenKZP/CommonLibVR/issues/215)
+* **decal:** add BGSDecalManager::ApplyDecal binding ([#335](https://github.com/RavenKZP/CommonLibVR/issues/335)) ([6b1eac1](https://github.com/RavenKZP/CommonLibVR/commit/6b1eac17721e8ae13656cce25a598753487bd8a0))
+* **explosion:** port ChainExplosion class ([#246](https://github.com/RavenKZP/CommonLibVR/issues/246)) ([a83c6e1](https://github.com/RavenKZP/CommonLibVR/commit/a83c6e181922b0c5a2b60408cdb999ed98feef77))
+* **explosion:** port IExplosionFactory interface ([#247](https://github.com/RavenKZP/CommonLibVR/issues/247)) ([3f8cb49](https://github.com/RavenKZP/CommonLibVR/commit/3f8cb4975bd74a796677cafc8245b792eed5b3e0))
+* flag for address library v5 compatibility ([#310](https://github.com/RavenKZP/CommonLibVR/issues/310)) ([d8b0acd](https://github.com/RavenKZP/CommonLibVR/commit/d8b0acd80b5dea2ef1e0549f78a36bd57ad5144d))
+* **havok:** add BGSAcousticSpace::Deactivate ([#239](https://github.com/RavenKZP/CommonLibVR/issues/239)) ([ed41157](https://github.com/RavenKZP/CommonLibVR/commit/ed41157c663e9850222dc8a3f74f33d82a188841))
+* **havok:** add hkbVariableBindingSet header ([#286](https://github.com/RavenKZP/CommonLibVR/issues/286)) ([5ce6293](https://github.com/RavenKZP/CommonLibVR/commit/5ce629310b1a0898b33ba79ced28ae05e17cabd5))
+* **havok:** expand havok RE coverage, fix 2 layout bugs ([#327](https://github.com/RavenKZP/CommonLibVR/issues/327)) ([231543d](https://github.com/RavenKZP/CommonLibVR/commit/231543d61bc511865f1954f3eb2768732452c1d6))
+* **lightning:** name fields, fix VR layout bug ([#257](https://github.com/RavenKZP/CommonLibVR/issues/257)) ([bd4a0e2](https://github.com/RavenKZP/CommonLibVR/commit/bd4a0e20d61262d454a09f4f9724a5b4d02d6f97))
+* **menu:** add MenuEventHandlerEx adapter ([#329](https://github.com/RavenKZP/CommonLibVR/issues/329)) ([140b776](https://github.com/RavenKZP/CommonLibVR/commit/140b776e4fc11095d6f172f594e899076b9c9886))
+* name GFxSprite/ASCharacter frame slots ([#273](https://github.com/RavenKZP/CommonLibVR/issues/273)) ([d706905](https://github.com/RavenKZP/CommonLibVR/commit/d7069050ae9bd81b7ef0f4df7e87191506a82d73)), closes [#161](https://github.com/RavenKZP/CommonLibVR/issues/161) [#163](https://github.com/RavenKZP/CommonLibVR/issues/163)
+* **ni:** type NiBinaryExtraData/BSFaceGenBaseMorphExtraData ([#323](https://github.com/RavenKZP/CommonLibVR/issues/323)) ([ef8d249](https://github.com/RavenKZP/CommonLibVR/commit/ef8d249e805c82d4833ff7713ae1c2e7daf2ece3))
+* **ni:** type NiTriShapeData/NiTriStripsData/NiTriStrips ([#322](https://github.com/RavenKZP/CommonLibVR/issues/322)) ([8fb03ef](https://github.com/RavenKZP/CommonLibVR/commit/8fb03eff4cfad6b2a7976df7760783e030555a57))
+* **projectile:** add BeamProjectile overrides ([#249](https://github.com/RavenKZP/CommonLibVR/issues/249)) ([ab3ec4c](https://github.com/RavenKZP/CommonLibVR/commit/ab3ec4c9b1f1e5f8b3d1a875963c27f74ed0b0bd))
+* **projectile:** add BeamProjectileImpactEvent ([#248](https://github.com/RavenKZP/CommonLibVR/issues/248)) ([aba5a6c](https://github.com/RavenKZP/CommonLibVR/commit/aba5a6c43ed017fce240a4b0bce4eb0816c26412))
+* **projectile:** add BSProceduralGeomEvent ([#250](https://github.com/RavenKZP/CommonLibVR/issues/250)) ([5dde316](https://github.com/RavenKZP/CommonLibVR/commit/5dde316a87e58d2191f3c2e71b89888c83902c8c)), closes [alandtse/CommonLibSSE-NG#248](https://github.com/alandtse/CommonLibSSE-NG/issues/248) [#249](https://github.com/RavenKZP/CommonLibVR/issues/249)
+* **projectile:** port lightning controller ([#251](https://github.com/RavenKZP/CommonLibVR/issues/251)) ([ba77d27](https://github.com/RavenKZP/CommonLibVR/commit/ba77d270d7710380f90956665491a8ecb747fbe4))
+* **projectile:** port lightning tasklet ([#252](https://github.com/RavenKZP/CommonLibVR/issues/252)) ([68076bc](https://github.com/RavenKZP/CommonLibVR/commit/68076bc70e855c9bbbfed85412d6bb209b65f31d)), closes [#251](https://github.com/RavenKZP/CommonLibVR/issues/251)
+* **racesexmenu:** type headPart/slider fields ([#321](https://github.com/RavenKZP/CommonLibVR/issues/321)) ([8eccdad](https://github.com/RavenKZP/CommonLibVR/commit/8eccdad356726dc0f1d3449786c58d636242eb3f))
+* **REL:** add hook-integrity verification (REL::VerifyBytes) ([#232](https://github.com/RavenKZP/CommonLibVR/issues/232)) ([ab5004b](https://github.com/RavenKZP/CommonLibVR/commit/ab5004bf122ee4ca72d04692cd285ef112fa5af2))
+* **rel:** support AE 1.7.99 address library format 5 ([#299](https://github.com/RavenKZP/CommonLibVR/issues/299)) ([7b47c5a](https://github.com/RavenKZP/CommonLibVR/commit/7b47c5a8f1772ed2331aebdb7035fac48d3c19ca))
+* **re:** model AE 1.7.99 layout changes ([#298](https://github.com/RavenKZP/CommonLibVR/issues/298)) ([9b1b041](https://github.com/RavenKZP/CommonLibVR/commit/9b1b041b9686525039e8ec587887ea29b749ab8f))
+* **saveloadgame:** name VR plugin-index fields ([#258](https://github.com/RavenKZP/CommonLibVR/issues/258)) ([8c34459](https://github.com/RavenKZP/CommonLibVR/commit/8c344598e23d6129075c458786d240007d3d700e))
+* **saveloadmanager:** name/retype AE fields ([#265](https://github.com/RavenKZP/CommonLibVR/issues/265)) ([4813256](https://github.com/RavenKZP/CommonLibVR/commit/4813256e1c43d4d98ed6bfc4fa7e9f57df02e33d))
+* **scene:** add BGSSceneAction vfuncs and PlayerRegionState members ([#237](https://github.com/RavenKZP/CommonLibVR/issues/237)) ([4ec4d61](https://github.com/RavenKZP/CommonLibVR/commit/4ec4d61579d4717d6bcac12696e8095ec27e4948))
+* **shadow:** add BSShaderAccumulator RENDER_MODE enum ([#235](https://github.com/RavenKZP/CommonLibVR/issues/235)) ([3b5896f](https://github.com/RavenKZP/CommonLibVR/commit/3b5896fd42a6ecbc24cd7b4b63b6e4ce8baadb2d))
+* **tasklet:** add group/manager headers ([#262](https://github.com/RavenKZP/CommonLibVR/issues/262)) ([ad3a1e0](https://github.com/RavenKZP/CommonLibVR/commit/ad3a1e0c23128bbcbf4ec4ce9ffe352575ceb58d)), closes [alandtse/skyrim_vr_address_library#155](https://github.com/alandtse/skyrim_vr_address_library/issues/155) [skyrim_vr_address_library#155](https://github.com/RavenKZP/skyrim_vr_address_library/issues/155) [#155](https://github.com/RavenKZP/CommonLibVR/issues/155)
+* **tes:** add SetCurrentCell ([#268](https://github.com/RavenKZP/CommonLibVR/issues/268)) ([52bdd13](https://github.com/RavenKZP/CommonLibVR/commit/52bdd13355b40714cb1a3c6ab10823df630b3766)), closes [#264](https://github.com/RavenKZP/CommonLibVR/issues/264) [#266](https://github.com/RavenKZP/CommonLibVR/issues/266) [alandtse/skyrim_vr_address_library#157](https://github.com/alandtse/skyrim_vr_address_library/issues/157) [skyrim_vr_address_library#157](https://github.com/RavenKZP/skyrim_vr_address_library/issues/157)
+* **tes:** name RUNTIME_DATA2 fields ([#264](https://github.com/RavenKZP/CommonLibVR/issues/264)) ([8356c70](https://github.com/RavenKZP/CommonLibVR/commit/8356c70d3414b45a2227f06a00bdddbad5c46094))
+* **water:** add BGSWaterCollisionManager types ([#338](https://github.com/RavenKZP/CommonLibVR/issues/338)) ([f684855](https://github.com/RavenKZP/CommonLibVR/commit/f68485576df7faf8b41026a09e3fde925031243f))
+
+### Bug Fixes
+
+* **actor:** correct SetFireNode vtable slot ([#312](https://github.com/RavenKZP/CommonLibVR/issues/312)) ([902c58a](https://github.com/RavenKZP/CommonLibVR/commit/902c58a9fd3523e89e128539e2b1245e9fe5ef12)), closes [#311](https://github.com/RavenKZP/CommonLibVR/issues/311) [ersh1/Precision#4](https://github.com/ersh1/Precision/issues/4) [#311](https://github.com/RavenKZP/CommonLibVR/issues/311) [#311](https://github.com/RavenKZP/CommonLibVR/issues/311)
+* **actor:** LocalMap key comparison off-by-one ([#274](https://github.com/RavenKZP/CommonLibVR/issues/274)) ([f08b95b](https://github.com/RavenKZP/CommonLibVR/commit/f08b95b5cec9a36cb1ab31a4295670f76c4968f7))
+* **AE:** fix offset gaps in SkyrimVM/PlayerCharacter ([#306](https://github.com/RavenKZP/CommonLibVR/issues/306)) ([68ae73e](https://github.com/RavenKZP/CommonLibVR/commit/68ae73e1cb99cdf81cd406918531d0570fe1e332))
+* **bsbatchrenderer:** correct 0x58-0x70 layout ([#275](https://github.com/RavenKZP/CommonLibVR/issues/275)) ([1f526fe](https://github.com/RavenKZP/CommonLibVR/commit/1f526fe131163c76cfad5156de01e65fbb0084ab))
+* correct MapMenu/LocalMapMenu runtime-data layout ([#309](https://github.com/RavenKZP/CommonLibVR/issues/309)) ([7ae1c97](https://github.com/RavenKZP/CommonLibVR/commit/7ae1c9768c11cca293a1a4c9e6a0c55e8f4d55ae))
+* **hkbBehaviorGraph:** variableValueSet type ([#281](https://github.com/RavenKZP/CommonLibVR/issues/281)) ([7dfcd6f](https://github.com/RavenKZP/CommonLibVR/commit/7dfcd6ffcd4b1636fc90f3bc0bac5dd3a0a721c9))
+* **inventory:** default IItemChangeVisitor dtors ([#328](https://github.com/RavenKZP/CommonLibVR/issues/328)) ([8339e6d](https://github.com/RavenKZP/CommonLibVR/commit/8339e6d37f66448144d8ee25afb6a0e1a5486bea))
+* **lightning:** add BSTEventSource base at 0x48 ([#276](https://github.com/RavenKZP/CommonLibVR/issues/276)) ([c4698c4](https://github.com/RavenKZP/CommonLibVR/commit/c4698c4c77f013d61513a0094e76d0694139cccb)), closes [#250](https://github.com/RavenKZP/CommonLibVR/issues/250) [#257](https://github.com/RavenKZP/CommonLibVR/issues/257)
+* **lightning:** VR runtime accessor for cross-VR safety ([#254](https://github.com/RavenKZP/CommonLibVR/issues/254)) ([e32b5d1](https://github.com/RavenKZP/CommonLibVR/commit/e32b5d1da1a0f9cd234789455a880e6d9bd98dc6)), closes [#252](https://github.com/RavenKZP/CommonLibVR/issues/252)
+* **menu:** correct AE id for BSTArray overload ([#317](https://github.com/RavenKZP/CommonLibVR/issues/317)) ([73a196a](https://github.com/RavenKZP/CommonLibVR/commit/73a196ab74a35bb67a12a9e27b4b715b01888b07))
+* **ni:** add NiAVObject::GetFlags02 accessor ([#289](https://github.com/RavenKZP/CommonLibVR/issues/289)) ([5ffbc64](https://github.com/RavenKZP/CommonLibVR/commit/5ffbc64c9e96bbabd523fdd023fa2b096b85d5c2))
+* **ni:** allocate NiNode::Create with runtime-correct size ([#284](https://github.com/RavenKZP/CommonLibVR/issues/284)) ([4365366](https://github.com/RavenKZP/CommonLibVR/commit/4365366cb4be4cbd0337933bddfb70b52cc75cac)), closes [#120](https://github.com/RavenKZP/CommonLibVR/issues/120) [#7](https://github.com/RavenKZP/CommonLibVR/issues/7)
+* **region:** resolve TES gridBufferDistance floats ([#243](https://github.com/RavenKZP/CommonLibVR/issues/243)) ([dc00206](https://github.com/RavenKZP/CommonLibVR/commit/dc00206641680554a2242c2c3ae27255086320c1))
+* **rel:** find exe via GetModuleHandleW(nullptr) ([#295](https://github.com/RavenKZP/CommonLibVR/issues/295)) ([d38040b](https://github.com/RavenKZP/CommonLibVR/commit/d38040b8bf533b7611d7b59e752f3792a807a76f))
+* **rel:** restore Module constant initialization ([#287](https://github.com/RavenKZP/CommonLibVR/issues/287)) ([acc3ffd](https://github.com/RavenKZP/CommonLibVR/commit/acc3ffd262c61aeb1a4a89e06d9ad5ed186cffd7)), closes [#393](https://github.com/RavenKZP/CommonLibVR/issues/393)
+* **RE:** rename State::RUNTIME_DATA firstCameraStateIndex to eyeIndex ([#292](https://github.com/RavenKZP/CommonLibVR/issues/292)) ([61459e5](https://github.com/RavenKZP/CommonLibVR/commit/61459e5807a99a1158390bad18e25435da2f47f6))
+* **shaderprop:** correct VR alloc size ([#293](https://github.com/RavenKZP/CommonLibVR/issues/293)) ([69f7ece](https://github.com/RavenKZP/CommonLibVR/commit/69f7ece71ad465bae0c358c133dfa20c4cffc7a7))
+* **shadow:** add BSShadowFrustumLight FOV runtime accessor ([#280](https://github.com/RavenKZP/CommonLibVR/issues/280)) ([45afdb6](https://github.com/RavenKZP/CommonLibVR/commit/45afdb6fb9d65e574b53c69d811116d7e795fbb2))
+* ShowInventoryChangeMessage condition ([#261](https://github.com/RavenKZP/CommonLibVR/issues/261)) ([1dbda41](https://github.com/RavenKZP/CommonLibVR/commit/1dbda41a5e47de41f77afe5c59234bd655e4037d))
+* **state:** correct RUNTIME_DATA offset for 1.7.99 ([#307](https://github.com/RavenKZP/CommonLibVR/issues/307)) ([57cb667](https://github.com/RavenKZP/CommonLibVR/commit/57cb66769af52e3e3d2d073838d9303a07f0f743))
+* **state:** rename unk055 to useEarlyZ ([#308](https://github.com/RavenKZP/CommonLibVR/issues/308)) ([cce62f1](https://github.com/RavenKZP/CommonLibVR/commit/cce62f1a0d82eeb9c9905fc865301b76c74bffbc))
+* **state:** version AE>=1.7.99 frame fields ([#325](https://github.com/RavenKZP/CommonLibVR/issues/325)) ([86adeb8](https://github.com/RavenKZP/CommonLibVR/commit/86adeb8fba59f88aa613185bf10c90442bb41241))
+* **streambase:** correct AE/SE/VR flags offset ([#256](https://github.com/RavenKZP/CommonLibVR/issues/256)) ([4643fee](https://github.com/RavenKZP/CommonLibVR/commit/4643fee416aa4fe17b2066718ea8a23fc54c4711))
+* **sync:** resolve cross-VR build errors ([9d99532](https://github.com/RavenKZP/CommonLibVR/commit/9d99532331b9fc0080b3c3ea7a05a4f59726ec71))
+* **variable:** pack null handles as typed None ([#337](https://github.com/RavenKZP/CommonLibVR/issues/337)) ([e44731e](https://github.com/RavenKZP/CommonLibVR/commit/e44731e04d255d7e2f0f66f369cf6f3ee6b23223))
+* **vr:** correct PlayerCharacter VR/perk-entry-point layout ([#326](https://github.com/RavenKZP/CommonLibVR/issues/326)) ([b105ce1](https://github.com/RavenKZP/CommonLibVR/commit/b105ce17a26152a36d501a2debb50ea44aac9fac))
+* **vr:** correct render-mode 24 enum name ([#330](https://github.com/RavenKZP/CommonLibVR/issues/330)) ([f905c52](https://github.com/RavenKZP/CommonLibVR/commit/f905c520a402b6891ab4c4f00184024681571664))
+* **vr:** safe VR/AE runtime-data accessors ([#253](https://github.com/RavenKZP/CommonLibVR/issues/253)) ([18d6c10](https://github.com/RavenKZP/CommonLibVR/commit/18d6c101198b245d343fae2ad038669b9af0ae86))
+* **VR:** select State runtime base by build layout ([#291](https://github.com/RavenKZP/CommonLibVR/issues/291)) ([9fbd154](https://github.com/RavenKZP/CommonLibVR/commit/9fbd154b0fe42c5673b41745eaac18a79875717b))
+* **vr:** stop re-populating shared address table ([#259](https://github.com/RavenKZP/CommonLibVR/issues/259)) ([fd38fb4](https://github.com/RavenKZP/CommonLibVR/commit/fd38fb4181c0a98aac26f724355ac88bfa1877f2))
+* **water:** correct TESWaterReflections signature ([#242](https://github.com/RavenKZP/CommonLibVR/issues/242)) ([8dbfc27](https://github.com/RavenKZP/CommonLibVR/commit/8dbfc279eabda80ea2f3daf738e706d33f1b56b5))
+
+### Miscellaneous Chores
+
+* **license:** relicense to GPL-3.0-or-later ([#238](https://github.com/RavenKZP/CommonLibVR/issues/238)) ([12f8518](https://github.com/RavenKZP/CommonLibVR/commit/12f8518657cd525c7579a746e211c98bddacba6c))
+
 ## [7.4.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v7.3.0...v7.4.0) (2026-09-07)
 
 ### Features
