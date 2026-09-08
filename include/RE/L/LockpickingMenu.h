@@ -75,18 +75,40 @@ namespace RE
 		};
 		static_assert(sizeof(RUNTIME_DATA) == 0xC8);
 
+#ifdef ENABLE_SKYRIM_AE
+		struct AE1799_RUNTIME_DATA
+		{
+			float         unk110;     // 110
+			float         unk114;     // 114
+			std::uint32_t unk118;     // 118
+			bool          unk11C;     // 11C
+			bool          unk11D;     // 11D
+			bool          unk11E;     // 11E
+			bool          unk11F;     // 11F
+			bool          unk120;     // 120
+			bool          unk121;     // 121
+			bool          unk122;     // 122
+			std::uint8_t  pad123[5];  // 123
+		};
+		static_assert(sizeof(AE1799_RUNTIME_DATA) == 0x18);
+
+		RUNTIME_DATA_ACCESSOR_VERSIONED_OPTIONAL_EX(AE1799_RUNTIME_DATA, GetAe1799RuntimeData, SKSE::RUNTIME_SSE_1_7_99, 0x110);
+#endif
+
 		~LockpickingMenu() override;  // 00
 
 		// override (IMenu)
 		UI_MESSAGE_RESULTS ProcessMessage(UIMessage& a_message) override;  // 04
 
-#ifndef SKYRIM_CROSS_VR
 		// override (MenuEventHandler)
-		bool CanProcess(InputEvent* a_event) override;              // 01
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#ifdef EXCLUSIVE_SKYRIM_VR
 		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03
 		bool ProcessMouseMove(MouseMoveEvent* a_event) override;    // 04
 		bool ProcessButton(ButtonEvent* a_event) override;          // 05
+#endif
 
+#ifndef SKYRIM_CROSS_VR
 		// override (BSTEventSink<MenuOpenCloseEvent>)
 		BSEventNotifyControl ProcessEvent(const MenuOpenCloseEvent* a_event, BSTEventSource<MenuOpenCloseEvent>* a_eventSource) override;  // 01
 #endif

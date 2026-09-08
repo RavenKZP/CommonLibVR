@@ -24,9 +24,11 @@ namespace RE
 			return;
 		}
 
-		const auto        objectName = (a_objectName && a_objectName[0]) ? a_objectName : a_object->GetName();
-		const auto        phrase = a_added ? *"sAddItemtoInventory"_gs : *"sRemoveItemfromInventory"_gs;
-		const std::string message = a_count >= 1 ? std::format("{} {}", objectName, phrase) : std::format("{} ({}) {}", objectName, a_count, phrase);
+		const auto objectName = (a_objectName && a_objectName[0]) ? a_objectName : a_object->GetName();
+		const auto phrase = a_added ? *"sAddItemtoInventory"_gs : *"sRemoveItemfromInventory"_gs;
+		// Widen before abs(): abs(INT32_MIN) is UB, since +INT32_MAX+1 doesn't fit back in int32_t.
+		const auto        count = std::abs(static_cast<std::int64_t>(a_count));
+		const std::string message = count == 1 ? std::format("{} {}", objectName, phrase) : std::format("{} ({}) {}", objectName, count, phrase);
 
 		ShowHUDMessage(message.c_str());
 

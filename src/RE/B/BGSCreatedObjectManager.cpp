@@ -29,17 +29,34 @@ namespace RE
 		return func(this, a_out, a_effects);
 	}
 
-	AlchemyItem* BGSCreatedObjectManager::AddPotion(BSTSmartPointer<AlchemyItem>& a_out, BSTArray<Effect>& a_effects)
-	{
-		using func_t = decltype(&BGSCreatedObjectManager::AddPotion);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(35265, 36167) };
-		return func(this, a_out, a_effects);
-	}
-
 	void BGSCreatedObjectManager::DestroyEnchantment(EnchantmentItem* a_enchantment, bool a_isWeapon)
 	{
 		using func_t = decltype(&BGSCreatedObjectManager::DestroyEnchantment);
 		static REL::Relocation<func_t> func{ RELOCATION_ID(35267, 36169) };
 		return func(this, a_enchantment, a_isWeapon);
+	}
+
+	void BGSCreatedObjectManager::AddPotion(BSTSmartPointer<
+												AlchemyItem,
+												BSTCreatedObjectSmartPointerPolicy>& a_created,
+		BSTArray<Effect>&                                                            a_effects)
+	{
+		using func_t = decltype(&BGSCreatedObjectManager::AddPotion);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(35265, 36167) };
+		func(this, a_created, a_effects);
+	}
+
+	void BGSCreatedObjectManager::DecrementRef(AlchemyItem* a_alchItem)
+	{
+		using func_t = decltype(&BGSCreatedObjectManager::DecrementRef);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(35269, 36171) };
+		return func(this, a_alchItem);
+	}
+
+	void BGSCreatedObjectManager::IncrementRef(AlchemyItem* a_alchItem)
+	{
+		using func_t = decltype(&BGSCreatedObjectManager::IncrementRef);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(35268, 36170) };
+		return func(this, a_alchItem);
 	}
 }

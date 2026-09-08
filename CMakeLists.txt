@@ -4,12 +4,14 @@ option(REX_OPTION_INI "Enables ini config support for REX." OFF)
 option(REX_OPTION_JSON "Enables json config support for REX." OFF)
 option(REX_OPTION_TOML "Enables toml config support for REX." OFF)
 option(SKSE_SUPPORT_XBYAK "Enables trampoline support for Xbyak." OFF)
+option(SKSE_SUPPORT_PATCH_SAFETY "Validate Trampoline::write_branch patch sites land on instruction boundaries before writing (vendors hde64); logs and still writes on failure, never blocks." ON)
 option(ENABLE_SKYRIM_SE "Enable support for Skyrim SE in the dynamic runtime feature." ON)
 option(ENABLE_SKYRIM_AE "Enable support for Skyrim AE in the dynamic runtime feature." ON)
 option(ENABLE_SKYRIM_VR "Enable support for Skyrim VR in the dynamic runtime feature." ON)
 option(BUILD_TESTS "Enable building of the unit tests." ON)
 message("Options:")
 message("\tEnable Xbyak: ${SKSE_SUPPORT_XBYAK}")
+message("\tEnable Patch Safety Checks: ${SKSE_SUPPORT_PATCH_SAFETY}")
 message("\tEnable Skyrim SE: ${ENABLE_SKYRIM_SE}")
 message("\tEnable Skyrim AE: ${ENABLE_SKYRIM_AE}")
 message("\tEnable Skyrim VR: ${ENABLE_SKYRIM_VR}")
@@ -22,7 +24,7 @@ endif()
 project(
 	CommonLibSSE
 	LANGUAGES CXX
-	VERSION 4.19.0
+	VERSION 7.4.0
 )
 
 include(CheckIPOSupported)
@@ -98,14 +100,14 @@ if(COMMONLIB_PREBUILT_RESOLVED)
 		"${PROJECT_NAME}" INTERFACE
 		spdlog::spdlog
 		Microsoft::DirectXTK
-		Advapi32.lib
+		advapi32.lib
 		bcrypt.lib
 		D3D11.lib
 		d3dcompiler.lib
-		Dbghelp.lib
+		dbghelp.lib
 		DXGI.lib
-		Ole32.lib
-		Version.lib
+		ole32.lib
+		version.lib
 		"${COMMONLIB_PREBUILT_RESOLVED}/lib/openvr_api.lib"
 	)
 	include(cmake/CommonLibSSE.cmake)  # add_commonlibsse_plugin() helper for consumers
@@ -115,15 +117,39 @@ endif()
 include(cmake/sourcelist.cmake)
 include(cmake/testlist.cmake)
 
+if(SKSE_SUPPORT_PATCH_SAFETY)
+	# hde64 has no vcpkg port -- vendor MinHook's 3-file instruction-length decoder directly.
+	# LANGUAGE C (set below) needs an explicit enable_language(C), or Ninja-based
+	# generators fail at generate time (the VS generator tolerates the omission).
+	enable_language(C)
+	include(FetchContent)
+	FetchContent_Declare(
+		hde64
+		GIT_REPOSITORY https://github.com/TsudaKageyu/minhook.git
+		GIT_TAG v1.3.4
+		GIT_SHALLOW TRUE
+		# Populate source only -- MinHook's own root CMakeLists.txt would otherwise add
+		# its full hooking library as a subdirectory/target, which we don't want.
+		SOURCE_SUBDIR src/hde
+	)
+	FetchContent_MakeAvailable(hde64)
+endif()
+
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}"
 	FILES ${SOURCES}
 )
 
-check_ipo_supported(RESULT USE_IPO OUTPUT IPO_OUTPUT)
+# IPO/LTCG substantially slows Release compile+link (MSVC's LTCG especially) for a
+# correctness-only CI matrix that ships no artifact. Off by default there
+# (-DCOMMONLIB_ENABLE_IPO=OFF); the real prebuilt/release builds keep it on.
+option(COMMONLIB_ENABLE_IPO "Enable interprocedural (link-time) optimization for Release builds" ON)
 
-if(USE_IPO)
-	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION "$<$<CONFIG:RELEASE>:ON>")
+if(COMMONLIB_ENABLE_IPO)
+	check_ipo_supported(RESULT USE_IPO OUTPUT IPO_OUTPUT)
+	if(USE_IPO)
+		set(CMAKE_INTERPROCEDURAL_OPTIMIZATION "$<$<CONFIG:RELEASE>:ON>")
+	endif()
 endif()
 
 add_library(
@@ -145,12 +171,21 @@ target_compile_definitions(
 	"$<$<BOOL:${REX_OPTION_JSON}>:REX_OPTION_JSON=1>"
 	"$<$<BOOL:${REX_OPTION_TOML}>:REX_OPTION_TOML=1>"
 	"$<$<BOOL:${SKSE_SUPPORT_XBYAK}>:SKSE_SUPPORT_XBYAK=1>"
+	"$<$<BOOL:${SKSE_SUPPORT_PATCH_SAFETY}>:SKSE_SUPPORT_PATCH_SAFETY=1>"
 	"$<$<BOOL:${ENABLE_SKYRIM_SE}>:ENABLE_SKYRIM_SE=1>"
 	"$<$<BOOL:${ENABLE_SKYRIM_AE}>:ENABLE_SKYRIM_AE=1>"
 	"$<$<BOOL:${ENABLE_SKYRIM_VR}>:ENABLE_SKYRIM_VR=1>"
 	"$<$<AND:$<BOOL:${ENABLE_SKYRIM_SE}>,$<BOOL:${ENABLE_SKYRIM_AE}>>:HAS_SKYRIM_MULTI_TARGETING=1>"
 	"$<$<AND:$<BOOL:${ENABLE_SKYRIM_SE}>,$<BOOL:${ENABLE_SKYRIM_VR}>>:HAS_SKYRIM_MULTI_TARGETING=1>"
 	"$<$<AND:$<BOOL:${ENABLE_SKYRIM_AE}>,$<BOOL:${ENABLE_SKYRIM_VR}>>:HAS_SKYRIM_MULTI_TARGETING=1>"
+)
+
+# PRIVATE: only REL::Module's embedded license notice reads this, so it stays out of the
+# consumer-visible PUBLIC definitions above to avoid macro collisions.
+target_compile_definitions(
+	"${PROJECT_NAME}"
+	PRIVATE
+	"COMMONLIB_VERSION=\"${PROJECT_VERSION}\""
 )
 
 target_compile_features(
@@ -216,6 +251,23 @@ target_include_directories(
 	${RAPIDCSV_INCLUDE_DIRS}
 )
 
+if(SKSE_SUPPORT_PATCH_SAFETY)
+	# hde64.h is only ever included from Trampoline.cpp -- the check never appears in a
+	# public header, so PRIVATE keeps the vendored dependency off every downstream
+	# consumer's include path.
+	target_sources("${PROJECT_NAME}" PRIVATE "${hde64_SOURCE_DIR}/src/hde/hde64.c")
+	target_include_directories("${PROJECT_NAME}" PRIVATE "${hde64_SOURCE_DIR}/src/hde")
+	# VS doesn't reliably infer hde64.c's LANGUAGE without this (silent <None>, fails only
+	# at link time); a vendored C file also can't use our C++ precompiled header, and /WX-
+	# keeps its own warnings from becoming errors without touching the file itself.
+	set_source_files_properties(
+		"${hde64_SOURCE_DIR}/src/hde/hde64.c" PROPERTIES
+		LANGUAGE C
+		SKIP_PRECOMPILE_HEADERS ON
+		COMPILE_OPTIONS "$<$<CXX_COMPILER_ID:MSVC>:/WX->"
+	)
+endif()
+
 target_compile_definitions(
 	"${PROJECT_NAME}"
 	PUBLIC
@@ -226,14 +278,14 @@ target_link_libraries(
 	PUBLIC
 	spdlog::spdlog
 	Microsoft::DirectXTK
-	Advapi32.lib
+	advapi32.lib
 	bcrypt.lib
 	D3D11.lib
 	d3dcompiler.lib
-	Dbghelp.lib
+	dbghelp.lib
 	DXGI.lib
-	Ole32.lib
-	Version.lib
+	ole32.lib
+	version.lib
 	"$<$<BOOL:${ENABLE_SKYRIM_VR}>:${OPENVR_LIB_DIR}/openvr_api.lib>"
 )
 
@@ -344,6 +396,8 @@ if(BUILD_TESTS)
 		tests/REL/versionlib-1-6-1130-0.bin
 		tests/REL/versionlib-1-6-1170-0.bin
 		tests/REL/versionlib-1-6-1179-0.bin
+		tests/REL/versionlib-1-7-99-0.bin
+		tests/REL/version-invalid-format.bin
 		DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Data/SKSE/Plugins/"
 	)
 

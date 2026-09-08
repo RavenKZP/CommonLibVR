@@ -110,11 +110,14 @@ namespace RE
 		private:
 			[[nodiscard]] T* GetAt(char a_actorValue) const
 			{
-				auto akVals = actorValues.data();
+				// keys are stored as (actorValue + 1) so that 0 can terminate the
+				// C-string; see SetBaseValue/GetBaseValue in the game binary.
+				const auto key = static_cast<char>(a_actorValue + 1);
+				auto       akVals = actorValues.data();
 				if (akVals && entries) {
 					std::uint32_t idx = 0;
 					while (akVals[idx] != '\0') {
-						if (akVals[idx] == a_actorValue) {
+						if (akVals[idx] == key) {
 							break;
 						}
 						++idx;
@@ -349,8 +352,8 @@ namespace RE
 		SKYRIM_REL_VR_VIRTUAL void                   SetActionComplete(bool a_set);                                                        // SE/AE 0x87, VR 0x88
 		SKYRIM_REL_VR_VIRTUAL void                   Disable();                                                                            // SE/AE 0x89, VR 0x8A
 		SKYRIM_REL_VR_VIRTUAL void                   ResetInventory(bool a_leveledOnly);                                                   // SE/AE 0x8A, VR 0x8B
-		SKYRIM_REL_VR_VIRTUAL NiNode*                GetFireNode();                                                                        // SE/AE 0x8C, VR 0x8D
-		SKYRIM_REL_VR_VIRTUAL void                   SetFireNode(NiNode* a_fireNode);                                                      // SE/AE 0x8D, VR 0x8E
+		SKYRIM_REL_VR_VIRTUAL NiNode*                GetFireNode();                                                                        // SE/AE 0x8B, VR 0x8C
+		SKYRIM_REL_VR_VIRTUAL void                   SetFireNode(NiNode* a_fireNode);                                                      // SE/AE 0x8C, VR 0x8D
 		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL bool     OnAddCellPerformQueueReference(TESObjectCELL& a_cell) const;                          // SE/AE 0x90, VR 0x91
 		SKYRIM_REL_VR_VIRTUAL void                   DoMoveToHigh();                                                                       // SE/AE 0x91, VR 0x92
 		SKYRIM_REL_VR_VIRTUAL void                   TryMoveToMiddleLow();                                                                 // SE/AE 0x92, VR 0x93
@@ -509,24 +512,29 @@ namespace RE
 		static NiPointer<Actor> LookupByHandle(RefHandle a_refHandle);
 		static bool             LookupByHandle(RefHandle a_refHandle, NiPointer<Actor>& a_refrOut);
 
-		bool                                    AddAnimationGraphEventSink(BSTEventSink<BSAnimationGraphEvent>* a_sink) const;
-		void                                    AddCastPower(SpellItem* a_power);
-		void                                    AddDeathItems();
-		bool                                    AddSpell(SpellItem* a_spell);
-		void                                    AddToFaction(TESFaction* a_faction, std::int8_t a_rank);
-		void                                    AddWornOutfit(BGSOutfit* a_outfit, bool a_forceUpdate);
-		void                                    AllowBleedoutDialogue(bool a_canTalk);
-		void                                    AllowPCDialogue(bool a_talk);
-		void                                    CastPermanentMagic(bool a_wornItemEnchantments, bool a_baseSpells, bool a_raceSpells, bool a_everyActorAbility);
-		[[nodiscard]] ACTOR_LOS_LOCATION        CalculateLOS(Actor* a_target, float a_viewCone);
-		[[nodiscard]] NiAVObject*               CalculateLOS(const NiPoint3& a_targetPosition, const NiPoint3& a_rayHitPosition, float a_viewCone);
-		[[nodiscard]] NiPoint3                  CalculateLOSLocation(ACTOR_LOS_LOCATION a_location);
-		[[nodiscard]] bool                      CanAttackActor(Actor* a_actor);
-		[[nodiscard]] bool                      CanFly() const;
-		[[nodiscard]] bool                      CanFlyHere() const;
-		[[nodiscard]] bool                      CanNavigateToPosition(const NiPoint3& a_pos, const NiPoint3& a_new_pos, float a_speed = 2.0f, float a_distance = 64.0f) const;
-		[[nodiscard]] bool                      CanOfferServices() const;
-		[[nodiscard]] bool                      CanPickpocket() const;
+		bool AddAnimationGraphEventSink(BSTEventSink<BSAnimationGraphEvent>* a_sink) const;
+		void AddCastPower(SpellItem* a_power);
+		void AddDeathItems();
+		bool AddSpell(SpellItem* a_spell);
+		void AddToFaction(TESFaction* a_faction, std::int8_t a_rank);
+		void AddWornOutfit(BGSOutfit* a_outfit, bool a_forceUpdate);
+		// Decrements sleepSeconds by the iSecondsToSleepPerUpdate GMST, finishing the wait/sleep once
+		// exhausted; call it in a loop to fast-forward one without going through SleepWaitMenu at all.
+		void                             AdvanceSleepWaitTick();
+		void                             AllowBleedoutDialogue(bool a_canTalk);
+		void                             AllowPCDialogue(bool a_talk);
+		void                             CastPermanentMagic(bool a_wornItemEnchantments, bool a_baseSpells, bool a_raceSpells, bool a_everyActorAbility);
+		[[nodiscard]] ACTOR_LOS_LOCATION CalculateLOS(Actor* a_target, float a_viewCone);
+		[[nodiscard]] NiAVObject*        CalculateLOS(const NiPoint3& a_targetPosition, const NiPoint3& a_rayHitPosition, float a_viewCone);
+		[[nodiscard]] NiPoint3           CalculateLOSLocation(ACTOR_LOS_LOCATION a_location);
+		[[nodiscard]] bool               CanAttackActor(Actor* a_actor);
+		[[nodiscard]] bool               CanFly() const;
+		[[nodiscard]] bool               CanFlyHere() const;
+		[[nodiscard]] bool               CanNavigateToPosition(const NiPoint3& a_pos, const NiPoint3& a_new_pos, float a_speed = 2.0f, float a_distance = 64.0f) const;
+		[[nodiscard]] bool               CanOfferServices() const;
+		[[nodiscard]] bool               CanPickpocket() const;
+		// On false, shows the matching vanilla HUD message itself; a_bed selects "sleep" wording + bed-ownership checks, nullptr for plain "wait".
+		[[nodiscard]] bool                      CanSleepWait(TESObjectREFR* a_bed = nullptr) const;
 		[[nodiscard]] bool                      CanTalkToPlayer() const;
 		[[nodiscard]] bool                      CanUseIdle(TESIdleForm* a_idle) const;
 		void                                    ClearArrested();
@@ -675,25 +683,27 @@ namespace RE
 		void                                    SetLooking(float a_angle);  // SetRotationX
 		bool                                    SetSleepOutfit(BGSOutfit* a_outfit, bool a_update3D);
 		bool                                    StartCombat(Actor* a_target, CombatGroup* a_combatGroup = nullptr);
-		void                                    StealAlarm(TESObjectREFR* a_ref, TESForm* a_object, std::int32_t a_num, std::int32_t a_total, TESForm* a_owner, bool a_allowWarning);
-		void                                    StopAlarmOnActor();
-		void                                    StopInteractingQuick(bool a_unk02);
-		void                                    StopMoving(float a_delta);
-		void                                    SwitchRace(TESRace* a_race, bool a_player);
-		void                                    TrespassAlarm(TESObjectREFR* a_ref, TESForm* a_ownership, std::int32_t a_crime);
-		void                                    UpdateArmorAbility(TESForm* a_armor, ExtraDataList* a_extraData);
-		void                                    UpdateAwakeSound(NiAVObject* a_obj3D);
-		void                                    Update3DModel();
-		void                                    UpdateHairColor();
-		[[nodiscard]] bool                      UpdateNavPos(const NiPoint3& a_pos, const NiPoint3& a_new_pos, float a_speed, float a_distance) const;
-		void                                    UpdateRegenDelay(ActorValue a_actorValue, float a_regenDelay);
-		void                                    UpdateSkinColor();
-		void                                    UpdateWeaponAbility(TESForm* a_weapon, ExtraDataList* a_extraData, bool a_leftHand);
-		void                                    VisitArmorAddon(TESObjectARMO* a_armor, TESObjectARMA* a_arma, std::function<void(bool a_firstPerson, NiAVObject& a_obj)> a_visitor);
-		bool                                    VisitFactions(std::function<bool(TESFaction* a_faction, std::int8_t a_rank)> a_visitor);
-		void                                    VisitSpells(ForEachSpellVisitor& a_visitor);
-		[[nodiscard]] std::uint8_t              WhoIsCasting();
-		bool                                    WouldBeStealing(const TESObjectREFR* a_target) const;
+		// Does not check whether resting is currently allowed -- callers must gate that themselves.
+		void                       StartSleeping(std::int32_t a_hours);
+		void                       StealAlarm(TESObjectREFR* a_ref, TESForm* a_object, std::int32_t a_num, std::int32_t a_total, TESForm* a_owner, bool a_allowWarning);
+		void                       StopAlarmOnActor();
+		void                       StopInteractingQuick(bool a_unk02);
+		void                       StopMoving(float a_delta);
+		void                       SwitchRace(TESRace* a_race, bool a_player);
+		void                       TrespassAlarm(TESObjectREFR* a_ref, TESForm* a_ownership, std::int32_t a_crime);
+		void                       UpdateArmorAbility(TESForm* a_armor, ExtraDataList* a_extraData);
+		void                       UpdateAwakeSound(NiAVObject* a_obj3D);
+		void                       Update3DModel();
+		void                       UpdateHairColor();
+		[[nodiscard]] bool         UpdateNavPos(const NiPoint3& a_pos, const NiPoint3& a_new_pos, float a_speed, float a_distance) const;
+		void                       UpdateRegenDelay(ActorValue a_actorValue, float a_regenDelay);
+		void                       UpdateSkinColor();
+		void                       UpdateWeaponAbility(TESForm* a_weapon, ExtraDataList* a_extraData, bool a_leftHand);
+		void                       VisitArmorAddon(TESObjectARMO* a_armor, TESObjectARMA* a_arma, std::function<void(bool a_firstPerson, NiAVObject& a_obj)> a_visitor);
+		bool                       VisitFactions(std::function<bool(TESFaction* a_faction, std::int8_t a_rank)> a_visitor);
+		void                       VisitSpells(ForEachSpellVisitor& a_visitor);
+		[[nodiscard]] std::uint8_t WhoIsCasting();
+		bool                       WouldBeStealing(const TESObjectREFR* a_target) const;
 
 		struct ACTOR_RUNTIME_DATA
 		{

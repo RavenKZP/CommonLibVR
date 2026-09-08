@@ -5,6 +5,7 @@
 namespace RE
 {
 	class BGSLoadGameBuffer;
+	class BGSSaveFormBuffer;
 	class TESFile;
 
 	class BGSSceneAction
@@ -40,8 +41,8 @@ namespace RE
 		[[nodiscard]] virtual Type          GetType() const = 0;                                 // 07
 		virtual void                        Unk_08(void);                                        // 08 - { return 0; }
 		virtual void                        LoadBuffer(void* a_arg1, BGSLoadGameBuffer* a_buf);  // 09
-		virtual void                        Unk_0A(void);                                        // 0A
-		virtual void                        Unk_0B(void);                                        // 0B - { unk14 &= 0xFC; }
+		virtual void                        SaveBuffer(BGSSaveFormBuffer* a_buf);                // 0A
+		virtual void                        ClearActiveFlags();                                  // 0B - { unk14 &= 0xFC; }
 		virtual void                        Unk_0C(void);                                        // 0C - { return; }
 		virtual void                        Unk_0D(void);                                        // 0D
 		[[nodiscard]] virtual EmotionType   GetEmotionType() const;                              // 0E - { return kNeutral; }

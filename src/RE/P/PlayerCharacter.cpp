@@ -122,7 +122,7 @@ namespace RE
 	NiPointer<TESObjectREFR> PlayerCharacter::GetGrabbedRef(VR_DEVICE a_device)
 	{
 		if SKYRIM_REL_CONSTEXPR (Module::IsVR()) {
-			return GetVRPlayerRuntimeData().grabbedObjectData[a_device].grabbedObject.get();
+			return GetVRPlayerRuntimeData()->grabbedObjectData[a_device].grabbedObject.get();
 		} else {
 			return REL::RelocateMemberIfNewer<ObjectRefHandle>(SKSE::RUNTIME_SSE_1_6_629, this, 0x8C8, 0x8D0).get();
 		}
@@ -199,7 +199,7 @@ namespace RE
 	bool PlayerCharacter::IsGrabbing() const
 	{
 		if SKYRIM_REL_CONSTEXPR (Module::IsVR()) {
-			for (auto& VRgrabData : GetVRPlayerRuntimeData().grabbedObjectData) {
+			for (auto& VRgrabData : GetVRPlayerRuntimeData()->grabbedObjectData) {
 				if (VRgrabData.grabbedObject) {
 					return true;
 				}
@@ -213,7 +213,8 @@ namespace RE
 #ifdef ENABLE_SKYRIM_VR
 	bool PlayerCharacter::IsGrabbingWithDevice(VR_DEVICE a_device) const
 	{
-		return static_cast<bool>(GetVRPlayerRuntimeData().grabbedObjectData[a_device].grabbedObject);
+		auto* vrData = GetVRPlayerRuntimeData();
+		return vrData && static_cast<bool>(vrData->grabbedObjectData[a_device].grabbedObject);
 	}
 #endif
 
@@ -250,6 +251,13 @@ namespace RE
 		using func_t = decltype(&PlayerCharacter::StartGrabObject);
 		static REL::Relocation<func_t> func{ RELOCATION_ID(39475, 40552) };
 		return func(this, a_device);
+	}
+
+	void PlayerCharacter::StartWaiting(std::int32_t a_hours)
+	{
+		using func_t = decltype(&PlayerCharacter::StartWaiting);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(39344, 40415) };
+		return func(this, a_hours);
 	}
 
 	void PlayerCharacter::UpdateCrosshairs()

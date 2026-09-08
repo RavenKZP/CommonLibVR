@@ -23,6 +23,7 @@
 #include "RE/S/SkyrimScriptObjectBindPolicy.h"
 #include "RE/S/SkyrimScriptStore.h"
 #include "REL/RuntimeDataAccessors.h"
+#include "SKSE/Version.h"
 
 namespace RE
 {
@@ -40,6 +41,10 @@ namespace RE
 	struct TESActivateEvent;
 	struct TESActiveEffectApplyRemoveEvent;
 	struct TESActorLocationChangeEvent;
+#ifdef ENABLE_SKYRIM_AE
+	struct TESAmiiboTouchEvent;
+	struct TESAmiiboForcedStopDetectionEvent;
+#endif
 	struct TESBookReadEvent;
 	struct TESCellAttachDetachEvent;
 	struct TESCellFullyLoadedEvent;
@@ -146,6 +151,8 @@ namespace RE
 		public BSTEventSink<BSScript::StatsEvent>,  // 0190
 		public BSTEventSink<MenuOpenCloseEvent>,    // 0198
 #endif
+		// AE 1.7.99's Amiibo bases (real bases, see above) shift this base's data by
+		// +0x10 with no corrected accessor -- do not access it directly on that version.
 		public BSTEventSource<BSScript::StatsEvent>  // 01A8
 	{
 	public:
@@ -279,11 +286,100 @@ namespace RE
             RUNTIME_DATA2_CONTENT
 		};
 
-		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x754, 0);
+		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
+		{
+			assert(!REL::Module::IsVR());
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					return REL::RelocateMember<RUNTIME_DATA>(this, 0x764);
+				}
+			}
+			return REL::RelocateMember<RUNTIME_DATA>(this, 0x754);
+		}
 
-		VR_RUNTIME_DATA_ACCESSOR(VR_RUNTIME_DATA, GetVRRuntimeData, 0x754);
+		VR_ONLY_POINTER_ACCESSOR(VR_RUNTIME_DATA, GetVRRuntimeData, 0x754);
 
-		RUNTIME_DATA_ACCESSOR_EX(RUNTIME_DATA2, GetRuntimeData2, 0x760, 0x780);
+		[[nodiscard]] inline RUNTIME_DATA2& GetRuntimeData2() noexcept
+		{
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsVR()) {
+				return REL::RelocateMember<RUNTIME_DATA2>(this, 0x780);
+			}
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					return REL::RelocateMember<RUNTIME_DATA2>(this, 0x770);
+				}
+			}
+			return REL::RelocateMember<RUNTIME_DATA2>(this, 0x760);
+		}
+
+#ifdef ENABLE_SKYRIM_AE
+		[[nodiscard]] BSTEventSink<TESAmiiboTouchEvent>* AsTESAmiiboTouchEventSink() noexcept
+		{
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					return reinterpret_cast<BSTEventSink<TESAmiiboTouchEvent>*>(reinterpret_cast<std::uintptr_t>(this) + 0x180);
+				}
+			}
+			return nullptr;
+		}
+
+		[[nodiscard]] BSTEventSink<TESAmiiboForcedStopDetectionEvent>* AsTESAmiiboForcedStopDetectionEventSink() noexcept
+		{
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					return reinterpret_cast<BSTEventSink<TESAmiiboForcedStopDetectionEvent>*>(reinterpret_cast<std::uintptr_t>(this) + 0x188);
+				}
+			}
+			return nullptr;
+		}
+#endif
+
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
+		[[nodiscard]] BSTEventSink<TESPlayerBowShotEvent>* AsTESPlayerBowShotEventSink() noexcept
+		{
+			std::uintptr_t offset = 0x180;
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					offset = 0x190;
+				}
+			}
+			return reinterpret_cast<BSTEventSink<TESPlayerBowShotEvent>*>(reinterpret_cast<std::uintptr_t>(this) + offset);
+		}
+
+		[[nodiscard]] BSTEventSink<TESFastTravelEndEvent>* AsTESFastTravelEndEventSink() noexcept
+		{
+			std::uintptr_t offset = 0x188;
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					offset = 0x198;
+				}
+			}
+			return reinterpret_cast<BSTEventSink<TESFastTravelEndEvent>*>(reinterpret_cast<std::uintptr_t>(this) + offset);
+		}
+
+		[[nodiscard]] BSTEventSink<PositionPlayerEvent>* AsPositionPlayerEventSink() noexcept
+		{
+			std::uintptr_t offset = 0x190;
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					offset = 0x1A0;
+				}
+			}
+			return reinterpret_cast<BSTEventSink<PositionPlayerEvent>*>(reinterpret_cast<std::uintptr_t>(this) + offset);
+		}
+
+		[[nodiscard]] BSTEventSink<BSScript::StatsEvent>* AsStatsEventSink() noexcept
+		{
+			std::uintptr_t offset = 0x198;
+			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
+				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_7_99) != std::strong_ordering::less) {
+					offset = 0x1A8;
+				}
+			}
+			return reinterpret_cast<BSTEventSink<BSScript::StatsEvent>*>(reinterpret_cast<std::uintptr_t>(this) + offset);
+		}
+#endif
+
 		static SkyrimVM* GetSingleton();
 
 		bool QueuePostRenderCall(const BSTSmartPointer<SkyrimScript::DelayFunctor>& a_functor);
@@ -294,39 +390,70 @@ namespace RE
 		// (see BSScript::IFreezeQuery) or a timeout.
 		void Freeze();
 
-		// members
-		BSTSmartPointer<BSScript::IVirtualMachine> impl;                       // 0200
-		BSScript::IVMSaveLoadInterface*            saveLoadInterface;          // 0208
-		BSScript::IVMDebugInterface*               debugInterface;             // 0210
-		BSScript::SimpleAllocMemoryPagePolicy      memoryPagePolicy;           // 0218
-		BSScript::CompiledScriptLoader             scriptLoader;               // 0240
-		SkyrimScript::Logger                       logger;                     // 0278
-		SkyrimScript::HandlePolicy                 handlePolicy;               // 0328
-		SkyrimScript::ObjectBindPolicy             objectBindPolicy;           // 0398
-		BSTSmartPointer<SkyrimScript::Store>       scriptStore;                // 0470
-		SkyrimScript::FragmentSystem               fragmentSystem;             // 0478
-		SkyrimScript::Profiler                     profiler;                   // 0590
-		SkyrimScript::SavePatcher                  savePatcher;                // 0670
-		mutable BSSpinLock                         frozenLock;                 // 0678
-		std::uint32_t                              isFrozen;                   // 0680
-		mutable BSSpinLock                         currentVMTimeLock;          // 0684
-		std::uint32_t                              currentVMTime;              // 068C
-		std::uint32_t                              currentVMMenuModeTime;      // 0690
-		std::uint32_t                              currentVMGameTime;          // 0694
-		std::uint32_t                              currentVMDaysPassed;        // 0698 - Calender.GetDaysPassed() * 1000
-		mutable BSSpinLock                         queuedWaitEventLock;        // 069C
-		std::uint32_t                              pad06A4;                    // 06A4
-		BSTArray<WaitCall>                         queuedWaitCalls;            // 06A8 - Utility.Wait() calls
-		BSTArray<WaitCall>                         queuedWaitMenuModeCalls;    // 06C0 - Utility.WaitMenuMode() calls
-		BSTArray<WaitCall>                         queuedWaitGameCalls;        // 06D8 - Utility.WaitGameTime() calls
-		mutable BSSpinLock                         queuedLOSEventCheckLock;    // 06F0
-		BSTArray<BSTSmartPointer<LOSDataEvent>>    queuedLOSEventChecks;       // 06F8 - OnGainLOS/OnLostLOS
-		std::uint32_t                              currentLOSEventCheckIndex;  // 0710
-		mutable BSSpinLock                         queuedOnUpdateEventLock;    // 0714
-		std::uint32_t                              pad071C;                    // 071C
-		BSTArray<BSTSmartPointer<UpdateDataEvent>> queuedOnUpdateEvents;       // 0720
-		BSTArray<BSTSmartPointer<UpdateDataEvent>> queuedOnUpdateGameEvents;   // 0738
-		std::uint32_t                              unk0750;                    // 0750
+		// AE 1.7.99's Amiibo base-class insertion (see above) shifts every field in
+		// this struct by the same +0x10, at the same version boundary.
+		struct VM_RUNTIME_DATA
+		{
+			BSTSmartPointer<BSScript::IVirtualMachine> impl;                       // 0200
+			BSScript::IVMSaveLoadInterface*            saveLoadInterface;          // 0208
+			BSScript::IVMDebugInterface*               debugInterface;             // 0210
+			BSScript::SimpleAllocMemoryPagePolicy      memoryPagePolicy;           // 0218
+			BSScript::CompiledScriptLoader             scriptLoader;               // 0240
+			SkyrimScript::Logger                       logger;                     // 0278
+			SkyrimScript::HandlePolicy                 handlePolicy;               // 0328
+			SkyrimScript::ObjectBindPolicy             objectBindPolicy;           // 0398
+			BSTSmartPointer<SkyrimScript::Store>       scriptStore;                // 0470
+			SkyrimScript::FragmentSystem               fragmentSystem;             // 0478
+			SkyrimScript::Profiler                     profiler;                   // 0590
+			SkyrimScript::SavePatcher                  savePatcher;                // 0670
+			mutable BSSpinLock                         frozenLock;                 // 0678
+			std::uint32_t                              isFrozen;                   // 0680
+			mutable BSSpinLock                         currentVMTimeLock;          // 0684
+			std::uint32_t                              currentVMTime;              // 068C
+			std::uint32_t                              currentVMMenuModeTime;      // 0690
+			std::uint32_t                              currentVMGameTime;          // 0694
+			std::uint32_t                              currentVMDaysPassed;        // 0698 - Calender.GetDaysPassed() * 1000
+			mutable BSSpinLock                         queuedWaitEventLock;        // 069C
+			std::uint32_t                              pad06A4;                    // 06A4
+			BSTArray<WaitCall>                         queuedWaitCalls;            // 06A8 - Utility.Wait() calls
+			BSTArray<WaitCall>                         queuedWaitMenuModeCalls;    // 06C0 - Utility.WaitMenuMode() calls
+			BSTArray<WaitCall>                         queuedWaitGameCalls;        // 06D8 - Utility.WaitGameTime() calls
+			mutable BSSpinLock                         queuedLOSEventCheckLock;    // 06F0
+			BSTArray<BSTSmartPointer<LOSDataEvent>>    queuedLOSEventChecks;       // 06F8 - OnGainLOS/OnLostLOS
+			std::uint32_t                              currentLOSEventCheckIndex;  // 0710
+			mutable BSSpinLock                         queuedOnUpdateEventLock;    // 0714
+			std::uint32_t                              pad071C;                    // 071C
+			BSTArray<BSTSmartPointer<UpdateDataEvent>> queuedOnUpdateEvents;       // 0720
+			BSTArray<BSTSmartPointer<UpdateDataEvent>> queuedOnUpdateGameEvents;   // 0738
+			std::uint32_t                              unk0750;                    // 0750
+		};
+		static_assert(offsetof(VM_RUNTIME_DATA, impl) == 0x0);
+		static_assert(offsetof(VM_RUNTIME_DATA, saveLoadInterface) == 0x8);
+		static_assert(offsetof(VM_RUNTIME_DATA, debugInterface) == 0x10);
+		static_assert(offsetof(VM_RUNTIME_DATA, memoryPagePolicy) == 0x18);
+		static_assert(offsetof(VM_RUNTIME_DATA, scriptLoader) == 0x40);
+		static_assert(offsetof(VM_RUNTIME_DATA, logger) == 0x78);
+		static_assert(offsetof(VM_RUNTIME_DATA, handlePolicy) == 0x128);
+		static_assert(offsetof(VM_RUNTIME_DATA, objectBindPolicy) == 0x198);
+		static_assert(offsetof(VM_RUNTIME_DATA, scriptStore) == 0x270);
+		static_assert(offsetof(VM_RUNTIME_DATA, fragmentSystem) == 0x278);
+		static_assert(offsetof(VM_RUNTIME_DATA, profiler) == 0x390);
+		static_assert(offsetof(VM_RUNTIME_DATA, savePatcher) == 0x470);
+		static_assert(offsetof(VM_RUNTIME_DATA, frozenLock) == 0x478);
+		static_assert(offsetof(VM_RUNTIME_DATA, isFrozen) == 0x480);
+		static_assert(offsetof(VM_RUNTIME_DATA, unk0750) == 0x550);
+		// sizeof(VM_RUNTIME_DATA) is 0x558 due to trailing alignment padding the
+		// compiler adds after unk0750 (not present in the real binary layout, where
+		// RUNTIME_DATA/RUNTIME_DATA2/VR_RUNTIME_DATA start immediately at +0x554);
+		// _padVMRuntimeData below reserves the real 0x554-byte span, not sizeof().
+		static_assert(sizeof(VM_RUNTIME_DATA) == 0x558);
+
+		RUNTIME_MEMBER_ACCESSOR_VERSIONED(VM_RUNTIME_DATA, GetVMRuntimeData, SKSE::RUNTIME_SSE_1_7_99, 0x200, 0x200, 0x210);
+
+	private:
+		std::uint8_t _padVMRuntimeData[0x554];  // 0200
+
+	public:
 #if defined(EXCLUSIVE_SKYRIM_FLAT)
 		RUNTIME_DATA_CONTENT;
 #elif defined(EXCLUSIVE_SKYRIM_VR)
@@ -337,11 +464,7 @@ namespace RE
 #endif
 	};
 #if defined(EXCLUSIVE_SKYRIM_FLAT)
-#	ifdef ENABLE_SKYRIM_AE
 	static_assert(sizeof(SkyrimVM) == 0x760);
-#	else
-	static_assert(sizeof(SkyrimVM) == 0x760);
-#	endif
 #elif defined(EXCLUSIVE_SKYRIM_VR)
 	static_assert(sizeof(SkyrimVM) == 0x780);
 #else

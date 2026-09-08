@@ -3,6 +3,7 @@
 #include "RE/B/BSShaderProperty.h"
 #include "RE/B/BSShaderPropertyLightData.h"
 #include "RE/B/BSTArray.h"
+#include "RE/M/MemoryManager.h"
 #include "RE/N/NiColor.h"
 
 namespace RE
@@ -49,6 +50,19 @@ namespace RE
 		void CopyMembers(BSLightingShaderProperty* a_other);
 		void InvalidateTextures(std::uint32_t a_unk1);
 
+		// Engine's own CreateClone allocates kSizeVR on VR, not sizeof(this).
+		inline static constexpr std::size_t kSizeFlat = 0x160;
+		inline static constexpr std::size_t kSizeVR = 0x178;
+
+		static BSLightingShaderProperty* Create()
+		{
+			auto prop = malloc_runtime<BSLightingShaderProperty>(kSizeFlat, kSizeVR);
+			if (prop) {
+				prop->Ctor();
+			}
+			return prop;
+		}
+
 		BSLightingShaderProperty* Ctor()
 		{
 			using func_t = decltype(&BSLightingShaderProperty::Ctor);
@@ -74,6 +88,13 @@ namespace RE
 		std::uint32_t             unk130;                         // 130
 		std::uint32_t             unk134;                         // 134
 		BSShaderPropertyLightData lightingLightData;              // 138
+#if defined(EXCLUSIVE_SKYRIM_VR)
+		bool  unk160;  // 160 - VR-only; not copied by CreateClone
+		float unk164;  // 164 - VR-only; not copied by CreateClone
+		float unk168;  // 168 - VR-only; not copied by CreateClone
+		float unk16C;  // 16C - VR-only; not copied by CreateClone
+		bool  unk170;  // 170 - VR-only; copied by CreateClone
+#endif
 	};
-	static_assert(sizeof(BSLightingShaderProperty) == 0x160);
+	STATIC_ASSERT_SIZE(BSLightingShaderProperty, BSLightingShaderProperty::kSizeFlat, BSLightingShaderProperty::kSizeFlat, BSLightingShaderProperty::kSizeVR, BSLightingShaderProperty::kSizeFlat);
 }

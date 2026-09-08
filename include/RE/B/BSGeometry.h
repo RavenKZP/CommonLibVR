@@ -95,7 +95,7 @@ namespace RE
 		// add
 		SKYRIM_REL_VR_VIRTUAL BSMultiIndexTriShape*   AsMultiIndexTriShape();    // 35 - { return 0; }
 		SKYRIM_REL_VR_VIRTUAL BSSkinnedDecalTriShape* AsSkinnedDecalTriShape();  // 36 - { return 0; }
-		SKYRIM_REL_VR_VIRTUAL void                    Unk_37(void);              // 37 - { return 0; }
+		SKYRIM_REL_VR_VIRTUAL std::uint32_t GetVisibleGroupsTriangleCount();     // 37 - { return 0; }
 
 		RUNTIME_DATA_ACCESSOR_EX(MODEL_DATA, GetModelData, 0x110, 0x138);
 		RUNTIME_DATA_ACCESSOR_EX(GEOMETRY_RUNTIME_DATA, GetGeometryRuntimeData, 0x120, 0x160);

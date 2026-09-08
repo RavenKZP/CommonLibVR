@@ -137,35 +137,22 @@ namespace RE
 		// 1130 and later
 		struct AE_RUNTIME_DATA
 		{
-#define AE_RUNTIME_DATA_CONTENT                                                               \
-	std::uint16_t                                                           unk2B0; /* 2B0 */ \
-	std::uint16_t                                                           unk2B2; /* 2B2 */ \
-	std::uint64_t                                                           unk2B8; /* 2B8 */ \
-	BSTArray<void*>                                                         unk2C0; /* 2C0 */ \
-	BSTArray<void*>                                                         unk2D8; /* 2D8 */ \
-	std::uint8_t                                                            unk2F0; /* 2F0 */ \
-	Thread                                                                  thread; /* 2F8 */ \
-	BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> unk370; /* 370 */ \
-	uint64_t                                                                unk3D0; /* 3D0 */
+#define AE_RUNTIME_DATA_CONTENT                                                                                                                                   \
+	std::uint16_t                                                           unk2B0;           /* 2B0 */                                                           \
+	std::uint16_t                                                           unk2B2;           /* 2B2 */                                                           \
+	BGSSaveLoadFileEntry*                                                   pendingSaveEntry; /* 2B8 - single cached/pending entry, separate from saveGameList */ \
+	BSTArray<BSFixedString>                                                 unk2C0;           /* 2C0 */                                                           \
+	BSTArray<BSFixedString>                                                 unk2D8;           /* 2D8 */                                                           \
+	std::uint8_t                                                            unk2F0;           /* 2F0 */                                                           \
+	Thread                                                                  thread;           /* 2F8 */                                                           \
+	BSTCommonStaticMessageQueue<BSTSmartPointer<bgs::saveload::Request>, 8> unk370;           /* 370 */                                                           \
+	uint64_t                                                                unk3D0;           /* 3D0 */
             AE_RUNTIME_DATA_CONTENT
 		};
 		static_assert(offsetof(AE_RUNTIME_DATA, thread) == 0x48);
 
 		RUNTIME_DATA_ACCESSOR_VERSIONED(RUNTIME_DATA, SKSE::RUNTIME_SSE_1_6_1130, 0x2b0, 0x2f8);
-		[[nodiscard]] inline AE_RUNTIME_DATA* GetAERuntimeData() noexcept
-		{
-			if SKYRIM_REL_CONSTEXPR (REL::Module::IsAE()) {
-				if (REL::Module::get().version().compare(SKSE::RUNTIME_SSE_1_6_1130) != std::strong_ordering::less) {
-					return REL::RelocateMember<AE_RUNTIME_DATA*>(this, 0x2b0);
-				}
-			}
-			return nullptr;
-		}
-
-		[[nodiscard]] inline const AE_RUNTIME_DATA& GetAERuntimeData() const noexcept
-		{
-			return *const_cast<BGSSaveLoadManager*>(this)->GetAERuntimeData();
-		}
+		AE_ONLY_POINTER_ACCESSOR_VERSIONED(AE_RUNTIME_DATA, GetAERuntimeData, SKSE::RUNTIME_SSE_1_6_1130, 0x2b0);
 
 		// members
 		BSTHashMap<std::uint64_t, BSFixedString> characterIDNameMap;      // 078
@@ -224,12 +211,12 @@ namespace RE
 		std::uint32_t                   unk2A4;                   // 2A4
 		std::uint64_t                   unk2A8;                   // 2A8
 #if defined(EXCLUSIVE_SKYRIM_AE)                                  // AE 1130 specific change
-		std::uint16_t   unk2B0;                                   // 2B0
-		std::uint16_t   unk2B2;                                   // 2B2
-		std::uint64_t   unk2B8;                                   // 2B8
-		BSTArray<void*> unk2C0;                                   // 2C0
-		BSTArray<void*> unk2D8;                                   // 2D8
-		std::uint8_t    unk2F0;                                   // 2F0
+		std::uint16_t           unk2B0;                           // 2B0
+		std::uint16_t           unk2B2;                           // 2B2
+		BGSSaveLoadFileEntry*   pendingSaveEntry;                 // 2B8
+		BSTArray<BSFixedString> unk2C0;                           // 2C0
+		BSTArray<BSFixedString> unk2D8;                           // 2D8
+		std::uint8_t            unk2F0;                           // 2F0
 #endif
 #if !defined(SKYRIM_CROSS_VR)
 		RUNTIME_DATA_CONTENT;

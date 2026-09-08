@@ -81,12 +81,14 @@ namespace REL
 
 		[[nodiscard]] static Module& get()
 		{
-			if (_initialized.load(std::memory_order_relaxed)) {
+			if (_initialized.load(std::memory_order_acquire)) {
 				return _instance;
 			}
-			[[maybe_unused]] std::unique_lock lock(_initLock);
-			_instance.init();
-			_initialized = true;
+			std::unique_lock lock(_initLock);
+			if (!_initialized.load(std::memory_order_relaxed)) {
+				_instance.init();
+				_initialized.store(true, std::memory_order_release);
+			}
 			return _instance;
 		}
 
@@ -164,14 +166,12 @@ namespace REL
 			_instance._filename = _instance._filePath = a_filename.data();
 			_instance._version = a_version;
 			if (a_runtime == Runtime::Unknown) {
-				switch (a_version[1]) {
-				case 4:
+				// Minor version 4 = VR, 5 = SE, 6+ = AE (see load_version()).
+				if (a_version[1] == 4) {
 					_instance._runtime = Runtime::VR;
-					break;
-				case 6:
+				} else if (a_version[1] >= 6) {
 					_instance._runtime = Runtime::AE;
-					break;
-				default:
+				} else {
 					_instance._runtime = Runtime::SE;
 				}
 			} else {
@@ -242,6 +242,14 @@ namespace REL
 		}
 
 		/**
+		 * Returns whether the current Skyrim runtime is an Anniversary Edition release at or above the given version.
+		 */
+		[[nodiscard]] static SKYRIM_REL bool IsAtLeast(Version a_version) noexcept
+		{
+			return IsAE() && get().version() >= a_version;
+		}
+
+		/**
 		 * Returns whether the current Skyrim runtime is a pre-Anniversary Edition Skyrim SE release.
 		 */
 		[[nodiscard]] static SKYRIM_REL bool IsSE() noexcept
@@ -264,7 +272,7 @@ namespace REL
 		}
 
 	private:
-		Module() = default;
+		Module() noexcept = default;
 		Module(const Module&) = delete;
 		Module(Module&&) = delete;
 
@@ -273,37 +281,29 @@ namespace REL
 		Module& operator=(const Module&) = delete;
 		Module& operator=(Module&&) = delete;
 
+		// Emitted from load(), the single point both init() overloads funnel through, rather
+		// than the constructor, so Module::_instance can stay constant-initialized (no
+		// user-provided ctor -> no static-initialization-order hazard for any consumer that
+		// resolves a RELOCATION_ID during its own dynamic initialization).
+		static void EmitLicenseNotice() noexcept;
+
 		bool init()
 		{
-			const auto getFilename = [&]() {
-				return REX::W32::GetEnvironmentVariableW(
-					ENVIRONMENT.data(),
-					_filename.data(),
-					static_cast<std::uint32_t>(_filename.size()));
-			};
-
-			void* moduleHandle = nullptr;
-			_filename.resize(getFilename());
-			if (const auto result = getFilename();
-				result != _filename.size() - 1 ||
-				result == 0) {
-				for (auto runtime : RUNTIMES) {
-					_filename = runtime;
-					moduleHandle = REX::W32::GetModuleHandleW(_filename.c_str());
-					if (moduleHandle) {
-						break;
-					}
-				}
-			}
-			_filePath = _filename;
+			const REX::W32::HMODULE moduleHandle = REX::W32::GetModuleHandleW(nullptr);
 			if (!moduleHandle) {
-				stl::report_and_fail(
-					std::format(
-						"Failed to obtain module handle for: \"{0}\".\n"
-						"You have likely renamed the executable to something unexpected. "
-						"Renaming the executable back to \"{0}\" may resolve the issue."sv,
-						stl::utf16_to_utf8(_filename).value_or("<unicode conversion error>"s)));
+				stl::report_and_fail("Failed to obtain the process's own module handle."sv);
 			}
+
+			constexpr std::size_t bufferSize = 32767;  // Windows extended-length path limit (\\?\ prefix)
+			_filePath.resize(bufferSize);
+			const auto length = REX::W32::GetModuleFileNameW(
+				moduleHandle, _filePath.data(), static_cast<std::uint32_t>(_filePath.size()));
+			if (length == 0 || length >= bufferSize) {
+				stl::report_and_fail("Failed to obtain the process's own module file path."sv);
+			}
+			_filePath.resize(length);
+			_filename = std::filesystem::path(_filePath).filename().wstring();
+
 			return load(moduleHandle, true);
 		}
 
@@ -321,6 +321,7 @@ namespace REL
 
 		[[nodiscard]] bool load(void* a_handle, bool a_failOnError)
 		{
+			EmitLicenseNotice();
 			_base = reinterpret_cast<std::uintptr_t>(a_handle);
 			if (!load_version(a_failOnError)) {
 				return false;
@@ -336,14 +337,15 @@ namespace REL
 			const auto version = GetFileVersion(_filePath);
 			if (version) {
 				_version = *version;
-				switch (_version[1]) {
-				case 4:
+				// Minor version 4 = VR, 5 = SE, 6+ = AE. AE 1.7.99 bumped the
+				// minor version itself (not just patch/build), so this must
+				// be a floor, not an exact match, or newer AE releases
+				// silently misclassify as SE.
+				if (_version[1] == 4) {
 					_runtime = Runtime::VR;
-					break;
-				case 6:
+				} else if (_version[1] >= 6) {
 					_runtime = Runtime::AE;
-					break;
-				default:
+				} else {
 					_runtime = Runtime::SE;
 				}
 				return true;
@@ -367,11 +369,6 @@ namespace REL
 			std::make_pair(".tls"sv, 0u),
 			std::make_pair(".text"sv, REX::W32::IMAGE_SCN_MEM_WRITE),
 			std::make_pair(".gfids"sv, 0u)
-		};
-
-		static constexpr auto                             ENVIRONMENT = L"SKSE_RUNTIME"sv;
-		static constexpr std::array<std::wstring_view, 2> RUNTIMES{
-			{ L"SkyrimVR.exe", L"SkyrimSE.exe" }
 		};
 
 		static Module                       _instance;

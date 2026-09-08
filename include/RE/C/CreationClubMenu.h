@@ -44,11 +44,15 @@ namespace RE
 		// override (IMenu)
 		void AdvanceMovie(float a_interval, std::uint32_t a_currentTime) override;  // 05
 
-#ifndef SKYRIM_CROSS_VR
 		// override (MenuEventHandler)
-		bool CanProcess(InputEvent* a_event) override;              // 01
+#ifndef SKYRIM_CROSS_VR
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#endif
+#ifdef EXCLUSIVE_SKYRIM_VR
 		bool ProcessThumbstick(ThumbstickEvent* a_event) override;  // 03
+#endif
 
+#ifndef SKYRIM_CROSS_VR
 		// override (GFxFunctionHandler)
 		void Call(Params& a_params) override;  // 01
 

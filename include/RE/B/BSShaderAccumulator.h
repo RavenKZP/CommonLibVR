@@ -2,6 +2,7 @@
 
 #include "RE/N/NiAlphaAccumulator.h"
 #include "RE/N/NiColor.h"
+#include "REX/REX/EnumSet.h"
 
 namespace RE
 {
@@ -11,6 +12,30 @@ namespace RE
 	class BSShaderAccumulator : public NiAlphaAccumulator
 	{
 	public:
+		enum class RENDER_MODE : std::uint32_t
+		{
+			kNormal = 0x00,
+			kShadowMask = 0x0C,
+			kShadowMapPlain = 0x0D,
+			kShadowMapClamped = 0x0E,
+			kShadowMapPb = 0x0F,
+			kShadowMapCube = 0x11,
+			kLocalMap = 0x12,
+			kLodLandscapePass = 0x14,
+			kWaterReflectionPass = 0x15,
+			kBloodDecalPass = 0x16,
+			kAlphaTransparencyShadowPass = 0x17,  // no-op on SE/AE/VR (verified: bare `return`)
+			// Slot 0x18 dispatches unrelated code per runtime, so it's aliased below rather than
+			// given one shared name.
+			kSEEndFirstPersonView = 0x18,
+			kAEResetQueuedShadowPassList = 0x18,
+			kVRWorldSpaceUIPass = 0x18,
+			kVolumetricLightingPass = 0x19,    // SE/AE; shared with kOcclusion's handler
+			kVREndFirstPersonView = 0x19,      // VR: kSEEndFirstPersonView's behavior sits here instead
+			kOcclusion = 0x1A,                 // SE/AE; VR shares this slot with 0x1B under a different handler
+			kPrecipitationOcclusionMap = 0x1C  // SE/AE only -- VR has no handler at this slot
+		};
+
 		class SunOcclusionTest
 		{
 		public:
@@ -40,7 +65,7 @@ namespace RE
 		// add
 		virtual void FinishAccumulatingPreResolveDepth(std::uint32_t flags);   // 2A
 		virtual void FinishAccumulatingPostResolveDepth(std::uint32_t flags);  // 2B
-		virtual void Unk_2C() = 0;                                             // 2C
+		virtual void FinishAccumulatingSunGlint() = 0;                         // 2C
 
 		struct RUNTIME_DATA
 		{
@@ -77,7 +102,7 @@ namespace RE
 	bool             currentActive;            /* 140 */ \
 	std::uint8_t     pad141[0x7];              /* 141 */ \
 	ShadowSceneNode* activeShadowSceneNode;    /* 148 */ \
-	std::uint32_t    renderMode;               /* 150 */ \
+	RENDER_MODE      renderMode;               /* 150 */ \
 	std::uint8_t     pad154[0x4];              /* 154 */ \
 	void*            unk158;                   /* 158 */ \
 	void*            unk160;                   /* 160 */ \

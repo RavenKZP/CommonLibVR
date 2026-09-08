@@ -56,7 +56,9 @@ namespace RE
 
 		// override (MenuEventHandler)
 #ifndef SKYRIM_CROSS_VR
-		bool CanProcess(InputEvent* a_event) override;      // 01
+		bool CanProcess(InputEvent* a_event) override;  // 01
+#endif
+#ifdef EXCLUSIVE_SKYRIM_VR
 		bool ProcessKinect(KinectEvent* a_event) override;  // 02
 		bool ProcessButton(ButtonEvent* a_event) override;  // 05
 #endif

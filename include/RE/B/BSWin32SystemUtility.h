@@ -28,6 +28,7 @@ namespace RE
 
 		virtual ~BSWin32SystemUtility();  // 00
 
+#ifndef ENABLE_SKYRIM_AE
 		// override (BSSystemUtility)
 		void GetAuthenticationInfo(char*& a_userAuthID, std::uint64_t& a_size) override;  // 02
 		void DoInitialize() override;                                                     // 04
@@ -36,6 +37,7 @@ namespace RE
 		void DoGetComputerName(char* a_buffer, std::uint64_t a_size) override;            // 0D
 		void DoAuthenticateUser() override;                                               // 10
 		bool Unk_12() override;                                                           // 12
+#endif
 
 		[[nodiscard]] static BSWin32SystemUtility* GetSingleton()
 		{

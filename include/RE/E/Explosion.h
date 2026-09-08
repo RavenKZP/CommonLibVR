@@ -60,8 +60,8 @@ namespace RE
 
 		// add
 		SKYRIM_REL_VR_VIRTUAL void Initialize();           // SE/AE 0xA2, VR 0xA3
-		SKYRIM_REL_VR_VIRTUAL void Update(float a_delta);  // A3
-		SKYRIM_REL_VR_VIRTUAL void FindTargets();          // A4
+		SKYRIM_REL_VR_VIRTUAL void Update(float a_delta);  // SE/AE 0xA3, VR 0xA4
+		SKYRIM_REL_VR_VIRTUAL void FindTargets();          // SE/AE 0xA4, VR 0xA5
 
 		struct EXPLOSION_RUNTIME_DATA
 		{

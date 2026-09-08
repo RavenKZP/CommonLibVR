@@ -2,9 +2,10 @@
 
 [![C++23](https://img.shields.io/static/v1?label=standard&message=c%2B%2B23&color=blue&logo=c%2B%2B&&logoColor=white&style=flat)](https://en.cppreference.com/w/cpp/compiler_support)
 ![Platform](https://img.shields.io/static/v1?label=platform&message=windows&color=dimgray&style=flat&logo=windows)
-[![Latest Release](https://img.shields.io/github/v/release/alandtse/CommonLibVR?logo=pkgsrc&logoColor=white)](#use)
-[![Main CI](https://github.com/alandtse/CommonLibVR/actions/workflows/main_ci.yml/badge.svg?branch=ng)](https://github.com/alandtse/CommonLibVR/actions/workflows/main_ci.yml)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/alandtse/CommonLibVR)
+[![License: GPL-3.0-or-later](https://img.shields.io/static/v1?label=license&message=GPL-3.0-or-later&color=blue&style=flat)](#license)
+[![Latest Release](https://img.shields.io/github/v/release/alandtse/CommonLibSSE-NG?logo=pkgsrc&logoColor=white)](#use)
+[![Main CI](https://github.com/alandtse/CommonLibSSE-NG/actions/workflows/main_ci.yml/badge.svg?branch=ng)](https://github.com/alandtse/CommonLibSSE-NG/actions/workflows/main_ci.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/alandtse/CommonLibSSE-NG)
 
 CommonLibSSE NG is a fork of CharmedBaryon's CommonLibSSE-NG, itself a fork of CommonLibSSE, which tracks upstream updates but adds a number of enhancements.
 It supports Skyrim Special Edition (SE), Skyrim Anniversary Edition (AE), and Skyrim Virtual Reality (VR).
@@ -14,7 +15,7 @@ It supports Skyrim Special Edition (SE), Skyrim Anniversary Edition (AE), and Sk
 To develop a C++ project that uses CommonLibSSE, you'll want to have this code available for discovery, and included as a build dependency by your build manager. Below are examples using the `xmake` or `cmake` managers.
 
 > [!TIP]
-> For examples & templates see the wiki: https://github.com/alandtse/CommonLibVR/wiki/Projects-using-CommonLib
+> For examples & templates see the wiki: https://github.com/alandtse/CommonLibSSE-NG/wiki/Projects-using-CommonLib
 
 ### Getting the code: Git SubModule
 
@@ -32,7 +33,7 @@ Add this CommonLibSSE repo as a [git submodule](https://git-scm.com/book/en/v2/G
 and storing it in `lib/commonlibsse-ng` folder:
 
 ```powershell
-PS E:\Git\foo-bar> git submodule add -b ng https://github.com/alandtse/CommonLibVR.git lib/commonlibsse-ng
+PS E:\Git\foo-bar> git submodule add -b ng https://github.com/alandtse/CommonLibSSE-NG.git lib/commonlibsse-ng
 Cloning into 'E:/Git/foo-bar/lib/commonlibsse-ng'...
 remote: Enumerating objects: 66210, done.
 remote: Counting objects: 100% (2526/2526), done.
@@ -190,6 +191,15 @@ Dependencies are managed via vcpkg. See `vcpkg.json` for the complete list.
 - [CMake](https://cmake.org/) 3.19+
 - [Vcpkg](https://github.com/microsoft/vcpkg)
 
+### Cross-compiling from Linux
+
+The `build-*-linux-clangcl-vcpkg-*` presets target the same Windows
+PE/MSVC ABI output as the presets above, using `clang-cl`+`lld-link`
+against an `xwin`-generated sysroot instead of a real MSVC install, and
+run from an ordinary Linux shell. See
+[`examples/linux-cross-compile/README.md`](examples/linux-cross-compile/README.md)
+for setup and usage.
+
 ## End User Dependencies
 
 - [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444) or
@@ -206,3 +216,25 @@ Dependencies are managed via vcpkg. See `vcpkg.json` for the complete list.
 ## Notes
 
 - CommonLib is incompatible with SKSE and is intended to replace it as a static dependency. However, you will still need the runtime component.
+
+## License
+
+[GPL-3.0-or-later](COPYING) WITH [Modding Exception AND GPL-3.0 Linking Exception (with Corresponding Source)](EXCEPTIONS.md).
+Specifically, the Modded Code includes:
+
+- Skyrim (and its variants)
+- Hardware drivers to enable additional functionality provided via proprietary SDKs, such as [Nvidia DLSS/Streamline](https://developer.nvidia.com/rtx/dlss/get-started) and [AMD FidelityFX FSR3](https://gpuopen.com/fidelityfx-super-resolution-3/)
+
+The Modding Libraries include:
+
+- [SKSE](https://skse.silverlock.org/)
+- Windows
+
+> [!IMPORTANT]
+> This is a breaking change from the previous MIT license. The Modding Exception only covers interoperation with
+> Skyrim itself and proprietary hardware SDKs (like DLSS/Streamline or FSR3) that neither we nor plugin authors have
+> the right to relicense -- it does **not** cover plugin/mod code. A plugin that statically links CommonLibSSE NG
+> forms a combined work with it and must itself be licensed under the GPL-3.0-or-later (or a GPL-compatible
+> license); see [EXCEPTIONS.md](EXCEPTIONS.md) for the exact terms.
+
+Originally based on code under [MIT](licenses/LICENSE-MIT).

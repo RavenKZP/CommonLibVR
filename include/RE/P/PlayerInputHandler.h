@@ -1,11 +1,17 @@
 #pragma once
 #include "RE/B/BSFixedString.h"
+#include "REL/Relocation.h"
+#include "SKSE/Version.h"
 
 namespace RE
 {
 	class ButtonEvent;
 	class InputEvent;
 	class MouseMoveEvent;
+#ifdef ENABLE_SKYRIM_AE
+	class MotionGestureEvent;
+	class SixaxisEvent;
+#endif
 	class PlayerControlsData;
 	class ThumbstickEvent;
 
@@ -17,14 +23,64 @@ namespace RE
 
 		virtual ~PlayerInputHandler() = default;  // 00
 
-		virtual bool CanProcess(InputEvent* a_event) = 0;                                                                          // 01
-		virtual void ProcessThumbstick([[maybe_unused]] ThumbstickEvent* a_event, [[maybe_unused]] PlayerControlsData* a_data) {}  // 02
-		virtual void ProcessMouseMove([[maybe_unused]] MouseMoveEvent* a_event, [[maybe_unused]] PlayerControlsData* a_data) {}    // 03
-		virtual void ProcessButton([[maybe_unused]] ButtonEvent* a_event, [[maybe_unused]] PlayerControlsData* a_data) {}          // 04
+		virtual bool CanProcess(InputEvent* a_event) = 0;  // 01
 
-#ifdef ENABLE_SKYRIM_VR
-		virtual void Unk_05(void);  // 05
-		virtual void Unk_06(void);  // 05
+#if defined(EXCLUSIVE_SKYRIM_VR)
+		virtual void ProcessThumbstick([[maybe_unused]] ThumbstickEvent* a_event, [[maybe_unused]] PlayerControlsData* a_data)
+		{}                                                                                                                       // 02
+		virtual void ProcessMouseMove([[maybe_unused]] MouseMoveEvent* a_event, [[maybe_unused]] PlayerControlsData* a_data) {}  // 03
+		virtual void ProcessButton([[maybe_unused]] ButtonEvent* a_event, [[maybe_unused]] PlayerControlsData* a_data) {}        // 04
+		virtual void Unk_05(void);                                                                                               // 05
+		virtual void Unk_06(void);                                                                                               // 06
+#else
+#	ifdef ENABLE_SKYRIM_AE
+#		define AE1799_SLOT_SHIFT(idx) (REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99) ? (idx) + 2 : (idx))
+#	else
+#		define AE1799_SLOT_SHIFT(idx) (idx)
+#	endif
+		void ProcessThumbstick(ThumbstickEvent* a_event, PlayerControlsData* a_data)
+		{
+			REL::RelocateVirtual<void(PlayerInputHandler*, ThumbstickEvent*, PlayerControlsData*)>(AE1799_SLOT_SHIFT(0x02), 0x02, this, a_event, a_data);
+		}
+		void ProcessMouseMove(MouseMoveEvent* a_event, PlayerControlsData* a_data)
+		{
+			REL::RelocateVirtual<void(PlayerInputHandler*, MouseMoveEvent*, PlayerControlsData*)>(AE1799_SLOT_SHIFT(0x03), 0x03, this, a_event, a_data);
+		}
+		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_data)
+		{
+			REL::RelocateVirtual<void(PlayerInputHandler*, ButtonEvent*, PlayerControlsData*)>(AE1799_SLOT_SHIFT(0x04), 0x04, this, a_event, a_data);
+		}
+
+#	ifdef ENABLE_SKYRIM_AE
+		bool ProcessMotionGesture(MotionGestureEvent* a_event)
+		{
+			if (!REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99)) {
+				return false;
+			}
+			return REL::RelocateVirtual<bool(PlayerInputHandler*, MotionGestureEvent*)>(0x02, 0x02, this, a_event);
+		}
+		bool ProcessSixaxis(SixaxisEvent* a_event)
+		{
+			if (!REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99)) {
+				return false;
+			}
+			return REL::RelocateVirtual<bool(PlayerInputHandler*, SixaxisEvent*)>(0x03, 0x03, this, a_event);
+		}
+#	endif
+#	undef AE1799_SLOT_SHIFT
+
+		void Unk_05(void)
+		{
+			if SKYRIM_REL_VR_CONSTEXPR (REL::Module::IsVR()) {
+				REL::RelocateVirtual<void(PlayerInputHandler*)>(0x05, 0x05, this);
+			}
+		}
+		void Unk_06(void)
+		{
+			if SKYRIM_REL_VR_CONSTEXPR (REL::Module::IsVR()) {
+				REL::RelocateVirtual<void(PlayerInputHandler*)>(0x06, 0x06, this);
+			}
+		}
 #endif
 
 		[[nodiscard]] bool IsInputEventHandlingEnabled() const;

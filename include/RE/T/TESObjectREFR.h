@@ -4,9 +4,11 @@
 #include "RE/B/BSFixedString.h"
 #include "RE/B/BSHandleRefObject.h"
 #include "RE/B/BSPointerHandle.h"
+#include "RE/B/BSResourceHandle.h"
 #include "RE/B/BSTArray.h"
 #include "RE/B/BSTEvent.h"
 #include "RE/B/BSTList.h"
+#include "RE/B/BSTObjectArena.h"
 #include "RE/B/BSTSmartPointer.h"
 #include "RE/B/BipedObjects.h"
 #include "RE/E/ExtraDataList.h"
@@ -81,22 +83,16 @@ namespace RE
 	{
 	public:
 		// members
-		BSTSmallArray<void*>  unk00;                // 00 - handleList?
-		TESWaterForm*         currentWaterType;     // 18
-		float                 relevantWaterHeight;  // 20
-		float                 cachedRadius;         // 24
-		std::uint16_t         flags;                // 28
-		std::int16_t          underwaterCount;      // 2A
-		std::uint32_t         pad2C;                // 2C
-		std::uint64_t         unk30;                // 30 - AIProcess::Data0B8
-		std::uint64_t         unk38;                // 38
-		std::uint64_t         unk40;                // 40
-		std::uint64_t         unk48;                // 48
-		std::uint64_t         unk50;                // 50
-		std::uint64_t         unk58;                // 58
-		std::uint64_t         unk60;                // 60
-		NiPointer<NiAVObject> data3D;               // 68
-		void*                 unk70;                // 70 - smart ptr
+		BSTSmallArray<void*>                  unk00;                // 00 - handleList?
+		TESWaterForm*                         currentWaterType;     // 18
+		float                                 relevantWaterHeight;  // 20
+		float                                 cachedRadius;         // 24
+		std::uint16_t                         flags;                // 28
+		std::int16_t                          underwaterCount;      // 2A
+		std::uint32_t                         pad2C;                // 2C
+		BSTHeapObjectArena<ModelDBHandle, 16> handleList;           // 30
+		NiPointer<NiAVObject>                 data3D;               // 68
+		void*                                 unk70;                // 70 - smart ptr
 	};
 	static_assert(sizeof(LOADED_REF_DATA) == 0x78);
 
@@ -324,20 +320,21 @@ namespace RE
 			}
 		}
 #endif
-		SKYRIM_REL_VR_VIRTUAL void                      RemoveWeapon(BIPED_OBJECT equipIndex);          // 82 - { return; }
-		SKYRIM_REL_VR_VIRTUAL void                      Unk_83(void);                                   // 83 - { return; }
-		SKYRIM_REL_VR_VIRTUAL void                      SetObjectReference(TESBoundObject* a_object);   // 84 - sets flag 24 if the object has destructibles
-		SKYRIM_REL_VR_VIRTUAL void                      MoveHavok(bool a_forceRec);                     // 85
-		SKYRIM_REL_VR_VIRTUAL void                      GetLinearVelocity(NiPoint3& a_velocity) const;  // 86
-		SKYRIM_REL_VR_VIRTUAL void                      SetActionComplete(bool a_set);                  // 87 - { return; }
-		SKYRIM_REL_VR_VIRTUAL void                      SetMovementComplete(bool a_set);                // 89 - { return; }
-		SKYRIM_REL_VR_VIRTUAL void                      Disable();                                      // 8A
-		SKYRIM_REL_VR_VIRTUAL void                      ResetInventory(bool a_leveledOnly);             // 8B
-		SKYRIM_REL_VR_VIRTUAL void                      Unk_8C(void);                                   // 8C - real slot; checks a field at +0x430, conditionally calls cleanup
-		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL NiNode*     GetFireNode();                                  // 8D - { return 0; }
-		SKYRIM_REL_VR_VIRTUAL void                      SetFireNode(NiNode* a_fireNode);                // 8E - { return; }
-		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL NiAVObject* GetCurrent3D() const;                           // 8F - { return Get3D2(); }
-		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL Explosion*  AsExplosion();                                  // 90 - { return 0; }
+		SKYRIM_REL_VR_VIRTUAL void RemoveWeapon(BIPED_OBJECT equipIndex);          // 82 - { return; }
+		SKYRIM_REL_VR_VIRTUAL void Unk_83(void);                                   // 83 - { return; }
+		SKYRIM_REL_VR_VIRTUAL void SetObjectReference(TESBoundObject* a_object);   // 84 - sets flag 24 if the object has destructibles
+		SKYRIM_REL_VR_VIRTUAL void MoveHavok(bool a_forceRec);                     // 85
+		SKYRIM_REL_VR_VIRTUAL void GetLinearVelocity(NiPoint3& a_velocity) const;  // 86
+		SKYRIM_REL_VR_VIRTUAL void SetActionComplete(bool a_set);                  // 87 - { return; }
+		SKYRIM_REL_VR_VIRTUAL void SetMovementComplete(bool a_set);                // 89 - { return; }
+		SKYRIM_REL_VR_VIRTUAL void Disable();                                      // 8A
+		SKYRIM_REL_VR_VIRTUAL void ResetInventory(bool a_leveledOnly);             // 8B
+		// Getter/setter pair over AIProcess::middleHigh->weaponBone (MiddleHighProcessData+0x150):
+		// GetFireNode lazily computes and caches it, SetFireNode stores directly.
+		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL NiNode*     GetFireNode();                    // SE/AE 0x8B, VR 0x8C - { return 0; }
+		SKYRIM_REL_VR_VIRTUAL void                      SetFireNode(NiNode* a_fireNode);  // SE/AE 0x8C, VR 0x8D - { return; }
+		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL NiAVObject* GetCurrent3D() const;             // SE/AE 0x8D, VR 0x8E - { return Get3D2(); }
+		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL Explosion*  AsExplosion();                    // 90 - { return 0; }
 		// UNVERIFIED - unverified past this point (2026-07); slots need re-confirming against SkyrimVR.exe
 		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL Projectile*    AsProjectile();                                                                       // UNVERIFIED - { return 0; }
 		SKYRIM_REL_VR_VIRTUAL bool                         OnAddCellPerformQueueReference(TESObjectCELL& a_cell) const;                          // UNVERIFIED - { return true; }

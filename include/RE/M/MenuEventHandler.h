@@ -2,6 +2,7 @@
 
 #include "RE/B/BSIntrusiveRefCounted.h"
 #include "REL/Relocation.h"
+#include "SKSE/Version.h"
 
 namespace RE
 {
@@ -9,6 +10,10 @@ namespace RE
 	class InputEvent;
 	class KinectEvent;
 	class MouseMoveEvent;
+#ifdef ENABLE_SKYRIM_AE
+	class MotionGestureEvent;
+	class SixaxisEvent;
+#endif
 	class ThumbstickEvent;
 	class VrWandTouchpadPositionEvent;
 	class VrWandTouchpadSwipeEvent;
@@ -24,18 +29,6 @@ namespace RE
 
 		virtual bool CanProcess(InputEvent* a_event) = 0;  // 01
 
-		// VR's vtable inserts three wand-touchpad input virtuals after CanProcess, shifting
-		// ProcessKinect/Thumbstick/MouseMove/Button from slots 02-05 down to 05-08. The
-		// MenuControls dispatcher routes INPUT_EVENT_TYPE::kVrTouchpadSwipe (7) -> slot 02 and
-		// kVrTouchpadPosition (6) -> slot 03; slot 04 is not routed by MenuControls.
-		//
-		// The 3 VR-only slots have no flat-layout counterpart at all (flat's vtable goes straight
-		// from CanProcess(01) to ProcessKinect(02)), so unlike the 4 shifting methods below they
-		// can't be RelocateVirtual'd with a real SE/AE index. In SKYRIM_CROSS_VR they're exposed as
-		// runtime-guarded accessors instead (IsVR() check first, matching GetVRTouchpadData() in
-		// BSInputEventQueue.h and GetVRControllerRight() in BSInputDeviceManager.cpp) rather than a
-		// RelocateVirtual wrapper -- same "check IsVR(), no-op on flat" idiom used throughout this
-		// codebase for VR-exclusive data, just applied to a function instead of a member.
 #if defined(EXCLUSIVE_SKYRIM_VR)
 		virtual bool ProcessVrWandTouchpadSwipe(VrWandTouchpadSwipeEvent* a_event);        // VR 02 - { return false; }
 		virtual bool ProcessVrWandTouchpadPosition(VrWandTouchpadPositionEvent* a_event);  // VR 03 - { return false; }
@@ -44,36 +37,47 @@ namespace RE
 		virtual bool ProcessThumbstick(ThumbstickEvent* a_event);                          // VR 06 - { return false; }
 		virtual bool ProcessMouseMove(MouseMoveEvent* a_event);                            // VR 07 - { return false; }
 		virtual bool ProcessButton(ButtonEvent* a_event);                                  // VR 08 - { return false; }
-#elif !defined(SKYRIM_CROSS_VR)
-		// EXCLUSIVE_SKYRIM_FLAT (SE/AE)
-		virtual bool ProcessKinect(KinectEvent* a_event);          // 02 - { return false; }
-		virtual bool ProcessThumbstick(ThumbstickEvent* a_event);  // 03 - { return false; }
-		virtual bool ProcessMouseMove(MouseMoveEvent* a_event);    // 04 - { return false; }
-		virtual bool ProcessButton(ButtonEvent* a_event);          // 05 - { return false; }
 #else
-		// SKYRIM_CROSS_VR (multi-runtime): non-virtual wrappers dispatch to the correct
-		// per-runtime vtable slot, so a single binary works on both flat and VR.
+#	ifdef ENABLE_SKYRIM_AE
+#		define AE1799_SLOT_SHIFT(idx) (REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99) ? (idx) + 2 : (idx))
+#	else
+#		define AE1799_SLOT_SHIFT(idx) (idx)
+#	endif
 		bool ProcessKinect(KinectEvent* a_event)
 		{
-			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessKinect)>(0x02, 0x05, this, a_event);
+			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessKinect)>(AE1799_SLOT_SHIFT(0x02), 0x05, this, a_event);
 		}
 		bool ProcessThumbstick(ThumbstickEvent* a_event)
 		{
-			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessThumbstick)>(0x03, 0x06, this, a_event);
+			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessThumbstick)>(AE1799_SLOT_SHIFT(0x03), 0x06, this, a_event);
 		}
 		bool ProcessMouseMove(MouseMoveEvent* a_event)
 		{
-			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessMouseMove)>(0x04, 0x07, this, a_event);
+			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessMouseMove)>(AE1799_SLOT_SHIFT(0x04), 0x07, this, a_event);
 		}
 		bool ProcessButton(ButtonEvent* a_event)
 		{
-			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessButton)>(0x05, 0x08, this, a_event);
+			return REL::RelocateVirtual<decltype(&MenuEventHandler::ProcessButton)>(AE1799_SLOT_SHIFT(0x05), 0x08, this, a_event);
 		}
 
-		// VR-only slots (no flat counterpart to relocate to): no-op on flat, dispatch to the real
-		// VR vtable slot only when actually running as VR. The repeated index passed as the SE/AE
-		// slot is a dead placeholder, not a real flat-layout value -- RelocateVirtual is unreachable
-		// on flat because of the IsVR() guard above it.
+#	ifdef ENABLE_SKYRIM_AE
+		bool ProcessMotionGesture(MotionGestureEvent* a_event)
+		{
+			if (!REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99)) {
+				return false;
+			}
+			return REL::RelocateVirtual<bool(MenuEventHandler*, MotionGestureEvent*)>(0x02, 0x02, this, a_event);
+		}
+		bool ProcessSixaxis(SixaxisEvent* a_event)
+		{
+			if (!REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99)) {
+				return false;
+			}
+			return REL::RelocateVirtual<bool(MenuEventHandler*, SixaxisEvent*)>(0x03, 0x03, this, a_event);
+		}
+#	endif
+#	undef AE1799_SLOT_SHIFT
+
 		bool ProcessVrWandTouchpadSwipe(VrWandTouchpadSwipeEvent* a_event)
 		{
 			if SKYRIM_REL_VR_CONSTEXPR (!REL::Module::IsVR()) {

@@ -5,6 +5,16 @@
 
 namespace RE
 {
+	namespace BSGraphics
+	{
+		struct VertexBuffer
+		{
+			REX::W32::ID3D11Buffer* buffer;
+			void*                   m_data;
+			size_t                  byteWidth;
+		};
+		static_assert(sizeof(VertexBuffer) == 0x18);
+	}
 
 	class BSMultiStreamInstanceTriShape : public BSInstanceTriShape
 	{
@@ -13,27 +23,46 @@ namespace RE
 		inline static constexpr auto Ni_RTTI = NiRTTI_BSMultiStreamInstanceTriShape;
 		inline static constexpr auto VTABLE = VTABLE_BSMultiStreamInstanceTriShape;
 
-		class InstanceGroup : BSMultiBoundAABB
+		class InstanceGroup : public BSMultiBoundAABB
 		{
-			ID3D11Buffer** buffer;         // 40
-			std::uint32_t  unk48;          // 48
-			std::uint32_t  instanceCount;  // 4C
-			bool           unk50;          // 50
+		public:
+			BSGraphics::VertexBuffer* vertexBuffer;   // 40
+			std::uint32_t             triCount;       // 48
+			std::uint32_t             instanceCount;  // 4C
+			bool                      isVisible;      // 50
 		};
 		static_assert(sizeof(InstanceGroup) == 0x58);
 
+		struct GroupHeader
+		{
+			RE::NiPoint3  center;
+			RE::NiPoint3  size;
+			std::uint32_t triCount;
+			std::uint32_t groupInstanceCount;
+			std::uint32_t numShortsPerInstance;
+		};
+		static_assert(sizeof(GroupHeader) == 0x24);
+
+		struct GroupAttachTask
+		{
+			RE::BSMultiStreamInstanceTriShape*                trishape;
+			RE::BSMultiStreamInstanceTriShape::InstanceGroup* instanceGroup;
+			BSTArray<std::uint32_t>*                          groupIndicies;
+		};
+		static_assert(sizeof(GroupAttachTask) == 0x18);
+
 		struct MULTISTREAM_TRISHAPE_RUNTIME_DATA
 		{
-#define RUNTIME_DATA_CONTENT                              \
-	BSTArray<InstanceGroup*> unk160;             /* 00 */ \
-	std::uint32_t            instanceGroupCount; /* 18 */ \
-	std::uint32_t            unk17C;             /* 1C */ \
-	float                    renderDistance;     /* 20 */ \
-	std::uint32_t            unk184;             /* 24 */ \
-	void*                    groupAlloc;         /* 28 */ \
-	std::uint32_t            instanceCount;      /* 30 */ \
-	std::uint32_t            instanceSize;       /* 34 */ \
-	std::uint32_t            unk198;             /* 38 */
+#define RUNTIME_DATA_CONTENT                                \
+	BSTArray<InstanceGroup*> instanceGroups;       /* 00 */ \
+	std::uint32_t            meshTriCount;         /* 18 */ \
+	std::uint32_t            maxInstancesPerGroup; /* 1C */ \
+	float                    renderDistance;       /* 20 */ \
+	std::uint32_t            unk184;               /* 24 */ \
+	void*                    groupAlloc;           /* 28 */ \
+	std::uint32_t            instanceCount;        /* 30 */ \
+	std::uint32_t            instanceSize;         /* 34 */ \
+	std::uint32_t            activeGroupCount;     /* 38 */
 
 			RUNTIME_DATA_CONTENT
 		};
@@ -49,7 +78,7 @@ namespace RE
 		void OnVisible(NiCullingProcess& a_process, std::int32_t a_alphaGroupIndex) override;  // 34
 
 		// overrides for BSTriShape
-		void          Unk_37(void) override;                                                                                               // 37
+		std::uint32_t GetVisibleGroupsTriangleCount() override;                                                                            // 37
 		void          BeginAddingInstances(std::uint32_t a_numFloatsPerInstance) override;                                                 // 38
 		void          AddInstances(std::uint32_t a_numFloatsPerInstance, std::uint16_t& a_instanceData) override;                          // 39
 		void          DoneAddingInstances(BSTArray<std::uint32_t>& a_instances) override;                                                  // 3A

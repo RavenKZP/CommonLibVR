@@ -1,11 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "commonlibsse-ng",
-  "version-semver": "4.19.0",
+  "version-semver": "7.4.0",
   "port-version": 0,
   "description": "A fork of CommonLibSSE with advanced features for modern SKSE development.",
   "homepage": "https://github.com/CharmedBaryon/CommonLibSSE",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "supports": "windows & x64",
   "builtin-baseline": "ee12231b20c95013c6638d845d04c91559a1d1ff",
   "dependencies": [

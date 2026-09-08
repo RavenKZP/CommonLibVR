@@ -10,6 +10,13 @@
 #include "RE/V/VrWandTouchpadPositionEvent.h"
 #include "RE/V/VrWandTouchpadSwipeEvent.h"
 #include "REL/RuntimeDataAccessors.h"
+#include "SKSE/Version.h"
+
+#ifdef ENABLE_SKYRIM_AE
+#	include "RE/A/AmiiboEvent.h"
+#	include "RE/M/MotionGestureEvent.h"
+#	include "RE/S/SixaxisEvent.h"
+#endif
 
 namespace RE
 {
@@ -24,6 +31,12 @@ namespace RE
 		inline static constexpr std::uint8_t MAX_KINECT_EVENTS = 1;
 		inline static constexpr std::uint8_t MAX_VR_TOUCHPAD_POSITION_EVENTS = 3;
 		inline static constexpr std::uint8_t MAX_VR_TOUCHPAD_SWIPE_EVENTS = 3;
+#ifdef ENABLE_SKYRIM_AE
+		// New in AE 1.7.99.
+		inline static constexpr std::uint8_t MAX_SIXAXIS_EVENTS = 2;
+		inline static constexpr std::uint8_t MAX_MOTION_GESTURE_EVENTS = 2;
+		inline static constexpr std::uint8_t MAX_AMIIBO_EVENTS = 1;
+#endif
 
 		static BSInputEventQueue* GetSingleton();
 
@@ -90,6 +103,7 @@ namespace RE
 		};
 		static_assert(sizeof(VRTOUCHPADEVENT_DATA) == 0x198);
 
+		// On AE, use GetQueueHead()/GetQueueTail(), not this struct's queueHead/queueTail.
 		struct RUNTIME_DATA
 		{
 #if !defined(ENABLE_SKYRIM_VR)  // Non-VR
@@ -118,6 +132,16 @@ namespace RE
 			RUNTIME_DATA_CONTENT
 		};
 
+#ifdef ENABLE_SKYRIM_AE
+		struct AE1799_EVENT_DATA
+		{
+			SixaxisEvent       sixaxisEvents[MAX_SIXAXIS_EVENTS];               // 000
+			MotionGestureEvent motionGestureEvents[MAX_MOTION_GESTURE_EVENTS];  // 120
+			AmiiboEvent        amiiboEvents[MAX_AMIIBO_EVENTS];                 // 190
+		};
+		static_assert(sizeof(AE1799_EVENT_DATA) == 0x1D0);
+#endif
+
 		// members
 		std::uint8_t  pad001;                // 001
 		std::uint16_t pad002;                // 002
@@ -132,7 +156,62 @@ namespace RE
 		RUNTIME_DATA_CONTENT
 #endif
 
-		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x20, 0x20);
+		[[nodiscard]] inline RUNTIME_DATA& GetRuntimeData() noexcept
+		{
+#ifdef ENABLE_SKYRIM_AE
+			const std::ptrdiff_t seAndAe =
+				REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_99) ?
+					0x28 :
+					0x20;
+#else
+			const std::ptrdiff_t seAndAe = 0x20;
+#endif
+			return REL::RelocateMember<RUNTIME_DATA>(this, seAndAe, 0x20);
+		}
+
+		[[nodiscard]] inline const RUNTIME_DATA& GetRuntimeData() const noexcept
+		{
+			return const_cast<BSInputEventQueue*>(this)->GetRuntimeData();
+		}
+
+#ifdef ENABLE_SKYRIM_AE
+		RUNTIME_DATA_ACCESSOR_VERSIONED_OPTIONAL_EX(AE1799_EVENT_DATA, GetAe1799EventData, SKSE::RUNTIME_SSE_1_7_99, 0x388);
+#endif
+
+#if defined(EXCLUSIVE_SKYRIM_VR)
+		[[nodiscard]] inline InputEvent*& GetQueueHead() noexcept
+		{
+			return GetRuntimeData().queueHead;
+		}
+		[[nodiscard]] inline InputEvent*& GetQueueTail() noexcept { return GetRuntimeData().queueTail; }
+#elif defined(ENABLE_SKYRIM_VR)  // SKYRIM_CROSS_VR: either runtime is possible
+		[[nodiscard]] inline InputEvent*& GetQueueHead() noexcept
+		{
+			if (REL::Module::IsVR()) {
+				return GetRuntimeData().queueHead;
+			}
+			return REL::RelocateMemberIfNewer<InputEvent*>(SKSE::RUNTIME_SSE_1_7_99, this, 0x380, 0x558);
+		}
+
+		[[nodiscard]] inline InputEvent*& GetQueueTail() noexcept
+		{
+			if (REL::Module::IsVR()) {
+				return GetRuntimeData().queueTail;
+			}
+			return REL::RelocateMemberIfNewer<InputEvent*>(SKSE::RUNTIME_SSE_1_7_99, this, 0x388, 0x560);
+		}
+#else                            // SE-only, AE-only, or flat -- no VR possible
+		[[nodiscard]] inline InputEvent*& GetQueueHead() noexcept
+		{
+			return REL::RelocateMemberIfNewer<InputEvent*>(SKSE::RUNTIME_SSE_1_7_99, this, 0x380, 0x558);
+		}
+
+		[[nodiscard]] inline InputEvent*& GetQueueTail() noexcept
+		{
+			return REL::RelocateMemberIfNewer<InputEvent*>(SKSE::RUNTIME_SSE_1_7_99, this, 0x388, 0x560);
+		}
+#endif
+
 		[[nodiscard]] VRTOUCHPAD_DATA* GetVRTouchpadData() noexcept
 		{
 			if SKYRIM_REL_VR_CONSTEXPR (!REL::Module::IsVR()) {

@@ -743,32 +743,33 @@ namespace REL
 			safe_write(address(), a_data.data(), a_data.size_bytes());
 		}
 
+		// a_skipSafetyCheck/a_expectedPatchHash/a_loc: see SKSE::Trampoline::write_branch.
 		template <std::size_t N>
-		std::uintptr_t write_branch(const std::uintptr_t a_dst)
+		std::uintptr_t write_branch(const std::uintptr_t a_dst, bool a_skipSafetyCheck = false, std::uint64_t a_expectedPatchHash = 0, std::source_location a_loc = std::source_location::current())
 			requires(std::same_as<value_type, std::uintptr_t>)
 		{
-			return SKSE::GetTrampoline().write_branch<N>(address(), a_dst);
+			return SKSE::GetTrampoline().write_branch<N>(address(), a_dst, a_skipSafetyCheck, a_expectedPatchHash, a_loc);
 		}
 
 		template <std::size_t N, class F>
-		std::uintptr_t write_branch(const F a_dst)
+		std::uintptr_t write_branch(const F a_dst, bool a_skipSafetyCheck = false, std::uint64_t a_expectedPatchHash = 0, std::source_location a_loc = std::source_location::current())
 			requires(std::same_as<value_type, std::uintptr_t>)
 		{
-			return SKSE::GetTrampoline().write_branch<N>(address(), stl::unrestricted_cast<std::uintptr_t>(a_dst));
+			return SKSE::GetTrampoline().write_branch<N>(address(), stl::unrestricted_cast<std::uintptr_t>(a_dst), a_skipSafetyCheck, a_expectedPatchHash, a_loc);
 		}
 
 		template <std::size_t N>
-		std::uintptr_t write_call(const std::uintptr_t a_dst)
+		std::uintptr_t write_call(const std::uintptr_t a_dst, bool a_skipSafetyCheck = false, std::uint64_t a_expectedPatchHash = 0, std::source_location a_loc = std::source_location::current())
 			requires(std::same_as<value_type, std::uintptr_t>)
 		{
-			return SKSE::GetTrampoline().write_call<N>(address(), a_dst);
+			return SKSE::GetTrampoline().write_call<N>(address(), a_dst, a_skipSafetyCheck, a_expectedPatchHash, a_loc);
 		}
 
 		template <std::size_t N, class F>
-		std::uintptr_t write_call(const F a_dst)
+		std::uintptr_t write_call(const F a_dst, bool a_skipSafetyCheck = false, std::uint64_t a_expectedPatchHash = 0, std::source_location a_loc = std::source_location::current())
 			requires(std::same_as<value_type, std::uintptr_t>)
 		{
-			return SKSE::GetTrampoline().write_call<N>(address(), stl::unrestricted_cast<std::uintptr_t>(a_dst));
+			return SKSE::GetTrampoline().write_call<N>(address(), stl::unrestricted_cast<std::uintptr_t>(a_dst), a_skipSafetyCheck, a_expectedPatchHash, a_loc);
 		}
 
 		void write_fill(const std::uint8_t a_value, const std::size_t a_count)

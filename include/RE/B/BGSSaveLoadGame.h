@@ -99,9 +99,9 @@ namespace RE
 
 		struct VR_RUNTIME_DATA
 		{
-#define VR_RUNTIME_DATA_CONTENT              \
-	std::uint8_t pluginList[0xFF]; /* 000 */ \
-	std::uint8_t unk18[0xFF];      /* 0FF */
+#define VR_RUNTIME_DATA_CONTENT                                                                                    \
+	std::uint8_t saveToLoadOrderIndex[0xFF]; /* 000 - save index -> current load-order index, 0xFF if not found */ \
+	std::uint8_t loadOrderToSaveIndex[0xFF]; /* 0FF - reverse: load-order index -> save index */
 			VR_RUNTIME_DATA_CONTENT
 		};
 
@@ -125,7 +125,7 @@ namespace RE
 		};
 
 		RUNTIME_DATA_ACCESSOR(RUNTIME_DATA, 0x0, 0x0);
-		RUNTIME_DATA_ACCESSOR_EX(VR_RUNTIME_DATA, GetVRRuntimeData, 0x0, 0x0);
+		VR_RUNTIME_DATA_ACCESSOR(VR_RUNTIME_DATA, GetVRRuntimeData, 0x0);
 		RUNTIME_DATA_ACCESSOR_EX(RUNTIME_DATA2, GetRuntimeData2, 0x30, 0x1fe);
 		[[nodiscard]] bool GetGlobalAllowChanges() const noexcept { return GetRuntimeData2().globalFlags.all(GlobalFlags::kGlobalAllowChanges); }
 		[[nodiscard]] bool GetSaveGameLoading() const noexcept { return GetRuntimeData2().globalFlags.all(GlobalFlags::kSaveGameLoading); }

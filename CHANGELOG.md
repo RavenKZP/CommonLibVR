@@ -1,4 +1,155 @@
-## [4.19.0](https://github.com/RavenKZP/CommonLibVR/compare/v4.18.0...v4.19.0) (2026-07-23)
+## [7.4.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v7.3.0...v7.4.0) (2026-09-07)
+
+### Features
+
+* **water:** add BGSWaterCollisionManager types ([#338](https://github.com/alandtse/CommonLibSSE-NG/issues/338)) ([f684855](https://github.com/alandtse/CommonLibSSE-NG/commit/f68485576df7faf8b41026a09e3fde925031243f))
+
+## [7.3.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v7.2.0...v7.3.0) (2026-09-07)
+
+### Features
+
+* **decal:** add BGSDecalManager::ApplyDecal binding ([#335](https://github.com/alandtse/CommonLibSSE-NG/issues/335)) ([6b1eac1](https://github.com/alandtse/CommonLibSSE-NG/commit/6b1eac17721e8ae13656cce25a598753487bd8a0))
+
+### Bug Fixes
+
+* **variable:** pack null handles as typed None ([#337](https://github.com/alandtse/CommonLibSSE-NG/issues/337)) ([e44731e](https://github.com/alandtse/CommonLibSSE-NG/commit/e44731e04d255d7e2f0f66f369cf6f3ee6b23223))
+
+## [7.2.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v7.1.0...v7.2.0) (2026-09-03)
+
+### Features
+
+* **actor:** add PlayerCharacter::StartWaiting/Actor::StartSleeping ([#331](https://github.com/alandtse/CommonLibSSE-NG/issues/331)) ([8492509](https://github.com/alandtse/CommonLibSSE-NG/commit/84925090fc813f70686c27fae650933453af574e))
+* **menu:** add MenuEventHandlerEx adapter ([#329](https://github.com/alandtse/CommonLibSSE-NG/issues/329)) ([140b776](https://github.com/alandtse/CommonLibSSE-NG/commit/140b776e4fc11095d6f172f594e899076b9c9886))
+
+### Bug Fixes
+
+* **vr:** correct render-mode 24 enum name ([#330](https://github.com/alandtse/CommonLibSSE-NG/issues/330)) ([f905c52](https://github.com/alandtse/CommonLibSSE-NG/commit/f905c520a402b6891ab4c4f00184024681571664))
+
+## [7.1.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v7.0.0...v7.1.0) (2026-09-02)
+
+### Features
+
+* **havok:** expand havok RE coverage, fix 2 layout bugs ([#327](https://github.com/alandtse/CommonLibSSE-NG/issues/327)) ([231543d](https://github.com/alandtse/CommonLibSSE-NG/commit/231543d61bc511865f1954f3eb2768732452c1d6))
+
+### Bug Fixes
+
+* **inventory:** default IItemChangeVisitor dtors ([#328](https://github.com/alandtse/CommonLibSSE-NG/issues/328)) ([8339e6d](https://github.com/alandtse/CommonLibSSE-NG/commit/8339e6d37f66448144d8ee25afb6a0e1a5486bea))
+* **vr:** correct PlayerCharacter VR/perk-entry-point layout ([#326](https://github.com/alandtse/CommonLibSSE-NG/issues/326)) ([b105ce1](https://github.com/alandtse/CommonLibSSE-NG/commit/b105ce17a26152a36d501a2debb50ea44aac9fac))
+
+## [7.0.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.8.0...v7.0.0) (2026-08-30)
+
+### ⚠ BREAKING CHANGES
+
+* **state:** direct state->frameCount / ->insideFrame / ->useEarlyZ access no longer compiles on ENABLE_SKYRIM_AE builds; use State::GetFrameCount() / GetInsideFrame() / GetUseEarlyZ() instead.
+
+Co-authored-by: Claude Sonnet 5 <noreply@anthropic.com>
+
+### Bug Fixes
+
+* **state:** version AE>=1.7.99 frame fields ([#325](https://github.com/alandtse/CommonLibSSE-NG/issues/325)) ([86adeb8](https://github.com/alandtse/CommonLibSSE-NG/commit/86adeb8fba59f88aa613185bf10c90442bb41241))
+
+## [6.8.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.7.1...v6.8.0) (2026-08-30)
+
+### Features
+
+* **ni:** type NiBinaryExtraData/BSFaceGenBaseMorphExtraData ([#323](https://github.com/alandtse/CommonLibSSE-NG/issues/323)) ([ef8d249](https://github.com/alandtse/CommonLibSSE-NG/commit/ef8d249e805c82d4833ff7713ae1c2e7daf2ece3))
+* **ni:** type NiTriShapeData/NiTriStripsData/NiTriStrips ([#322](https://github.com/alandtse/CommonLibSSE-NG/issues/322)) ([8fb03ef](https://github.com/alandtse/CommonLibSSE-NG/commit/8fb03eff4cfad6b2a7976df7760783e030555a57))
+* **racesexmenu:** type headPart/slider fields ([#321](https://github.com/alandtse/CommonLibSSE-NG/issues/321)) ([8eccdad](https://github.com/alandtse/CommonLibSSE-NG/commit/8eccdad356726dc0f1d3449786c58d636242eb3f))
+
+### Bug Fixes
+
+* **menu:** correct AE id for BSTArray overload ([#317](https://github.com/alandtse/CommonLibSSE-NG/issues/317)) ([73a196a](https://github.com/alandtse/CommonLibSSE-NG/commit/73a196ab74a35bb67a12a9e27b4b715b01888b07))
+
+## [6.7.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.7.0...v6.7.1) (2026-08-26)
+
+### Bug Fixes
+
+* **actor:** correct SetFireNode vtable slot ([#312](https://github.com/alandtse/CommonLibSSE-NG/issues/312)) ([902c58a](https://github.com/alandtse/CommonLibSSE-NG/commit/902c58a9fd3523e89e128539e2b1245e9fe5ef12)), closes [#311](https://github.com/alandtse/CommonLibSSE-NG/issues/311) [ersh1/Precision#4](https://github.com/ersh1/Precision/issues/4) [#311](https://github.com/alandtse/CommonLibSSE-NG/issues/311) [#311](https://github.com/alandtse/CommonLibSSE-NG/issues/311)
+
+## [6.7.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.6.3...v6.7.0) (2026-08-24)
+
+### Features
+
+* flag for address library v5 compatibility ([#310](https://github.com/alandtse/CommonLibSSE-NG/issues/310)) ([d8b0acd](https://github.com/alandtse/CommonLibSSE-NG/commit/d8b0acd80b5dea2ef1e0549f78a36bd57ad5144d))
+
+## [6.6.3](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.6.2...v6.6.3) (2026-08-23)
+
+### Bug Fixes
+
+* correct MapMenu/LocalMapMenu runtime-data layout ([#309](https://github.com/alandtse/CommonLibSSE-NG/issues/309)) ([7ae1c97](https://github.com/alandtse/CommonLibSSE-NG/commit/7ae1c9768c11cca293a1a4c9e6a0c55e8f4d55ae))
+
+## [6.6.2](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.6.1...v6.6.2) (2026-08-23)
+
+### Bug Fixes
+
+* **state:** correct RUNTIME_DATA offset for 1.7.99 ([#307](https://github.com/alandtse/CommonLibSSE-NG/issues/307)) ([57cb667](https://github.com/alandtse/CommonLibSSE-NG/commit/57cb66769af52e3e3d2d073838d9303a07f0f743))
+* **state:** rename unk055 to useEarlyZ ([#308](https://github.com/alandtse/CommonLibSSE-NG/issues/308)) ([cce62f1](https://github.com/alandtse/CommonLibSSE-NG/commit/cce62f1a0d82eeb9c9905fc865301b76c74bffbc))
+
+## [6.6.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.6.0...v6.6.1) (2026-08-22)
+
+### Bug Fixes
+
+* **AE:** fix offset gaps in SkyrimVM/PlayerCharacter ([#306](https://github.com/alandtse/CommonLibSSE-NG/issues/306)) ([68ae73e](https://github.com/alandtse/CommonLibSSE-NG/commit/68ae73e1cb99cdf81cd406918531d0570fe1e332))
+
+## [6.6.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.5.0...v6.6.0) (2026-08-22)
+
+### Features
+
+* **cmake:** add Linux-host cross-compile support via clang-cl+xwin ([#302](https://github.com/alandtse/CommonLibSSE-NG/issues/302)) ([848b3f9](https://github.com/alandtse/CommonLibSSE-NG/commit/848b3f9daace475aa49f539dee0c91c8e313b359)), closes [#300](https://github.com/alandtse/CommonLibSSE-NG/issues/300) [#215](https://github.com/alandtse/CommonLibSSE-NG/issues/215) [#215](https://github.com/alandtse/CommonLibSSE-NG/issues/215)
+
+## [6.5.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.4.0...v6.5.0) (2026-08-22)
+
+### Features
+
+* **re:** model AE 1.7.99 layout changes ([#298](https://github.com/alandtse/CommonLibSSE-NG/issues/298)) ([9b1b041](https://github.com/alandtse/CommonLibSSE-NG/commit/9b1b041b9686525039e8ec587887ea29b749ab8f))
+
+## [6.4.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.3.5...v6.4.0) (2026-08-21)
+
+### Features
+
+* **rel:** support AE 1.7.99 address library format 5 ([#299](https://github.com/alandtse/CommonLibSSE-NG/issues/299)) ([7b47c5a](https://github.com/alandtse/CommonLibSSE-NG/commit/7b47c5a8f1772ed2331aebdb7035fac48d3c19ca))
+
+## [6.3.5](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.3.4...v6.3.5) (2026-08-21)
+
+### Bug Fixes
+
+* **rel:** find exe via GetModuleHandleW(nullptr) ([#295](https://github.com/alandtse/CommonLibSSE-NG/issues/295)) ([d38040b](https://github.com/alandtse/CommonLibSSE-NG/commit/d38040b8bf533b7611d7b59e752f3792a807a76f))
+
+## [6.3.4](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.3.3...v6.3.4) (2026-08-18)
+
+## [6.3.3](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.3.2...v6.3.3) (2026-08-18)
+
+## [6.3.2](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.3.1...v6.3.2) (2026-08-16)
+
+## [6.3.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.3.0...v6.3.1) (2026-08-15)
+
+## [6.3.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.2.0...v6.3.0) (2026-08-14)
+
+## [6.2.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.1.1...v6.2.0) (2026-08-12)
+
+## [6.1.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.1.0...v6.1.1) (2026-08-07)
+
+## [6.1.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v6.0.0...v6.1.0) (2026-08-05)
+
+## [6.0.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.4.2...v6.0.0) (2026-07-31)
+
+## [5.4.2](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.4.1...v5.4.2) (2026-07-29)
+
+## [5.4.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.4.0...v5.4.1) (2026-07-29)
+
+## [5.4.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.3.0...v5.4.0) (2026-07-28)
+
+## [5.3.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.2.0...v5.3.0) (2026-07-28)
+
+## [5.2.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.1.1...v5.2.0) (2026-07-28)
+
+## [5.1.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.1.0...v5.1.1) (2026-07-27)
+
+## [5.1.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v5.0.0...v5.1.0) (2026-07-26)
+
+## [5.0.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v4.39.3...v5.0.0) (2026-07-26)
+
+## [4.39.3](https://github.com/alandtse/CommonLibVR/compare/v4.39.2...v4.39.3) (2026-07-24)
 
 ## [4.39.2](https://github.com/alandtse/CommonLibVR/compare/v4.39.1...v4.39.2) (2026-07-22)
 
