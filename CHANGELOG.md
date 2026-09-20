@@ -1,3 +1,9 @@
+## [8.4.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v8.4.0...v8.4.1) (2026-09-20)
+
+### Bug Fixes
+
+* **batchrenderer:** make SetupAndDrawPass static ([#372](https://github.com/alandtse/CommonLibSSE-NG/issues/372)) ([024eb91](https://github.com/alandtse/CommonLibSSE-NG/commit/024eb91a231043bc6187ae8597b28f8ddeb467b0))
+
 ## [8.4.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v8.3.0...v8.4.0) (2026-09-20)
 
 ### Features
