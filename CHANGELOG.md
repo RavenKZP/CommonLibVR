@@ -1,3 +1,9 @@
+## [8.4.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v8.3.0...v8.4.0) (2026-09-20)
+
+### Features
+
+* **batchrenderer:** add ClearAllRenderPasses ([#371](https://github.com/alandtse/CommonLibSSE-NG/issues/371)) ([0c02d8b](https://github.com/alandtse/CommonLibSSE-NG/commit/0c02d8bf4f404605182032b0fd4ee1678e87e94e))
+
 ## [8.3.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v8.2.0...v8.3.0) (2026-09-19)
 
 ### Features
