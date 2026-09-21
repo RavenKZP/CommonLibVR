@@ -1,3 +1,23 @@
+## [9.0.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v8.4.1...v9.0.0) (2026-09-21)
+
+### ⚠ BREAKING CHANGES
+
+* **HitData:** RE::HitData members at 0x74-0x7C are renamed to match
+what the engine stores there; the layout and sizeof are unchanged.
+Migrate as follows:
+
+criticalDamageMult (0x7C) is removed and was actually reflectedDamage
+(0x7C). It holds reflected melee damage, not a crit multiplier.
+reflectedDamage (0x78) is now pushBack (0x78), a knockback force.
+pushBack (0x74) is now unk74.
+For crits, test HitData::Flag::kCritical. The crit bonus is a flat
+value already included in totalDamage and physicalDamage.
+
+### Bug Fixes
+
+* correct GetWaterFogPassList return type ([#373](https://github.com/alandtse/CommonLibSSE-NG/issues/373)) ([3e6ac85](https://github.com/alandtse/CommonLibSSE-NG/commit/3e6ac85263ac0fba608705ecd40765616a5dff79))
+* **HitData:** correct members at 0x74-0x7C ([#374](https://github.com/alandtse/CommonLibSSE-NG/issues/374)) ([a530b29](https://github.com/alandtse/CommonLibSSE-NG/commit/a530b2975417e25c06b1972757fc2a3ee48e2865))
+
 ## [8.4.1](https://github.com/alandtse/CommonLibSSE-NG/compare/v8.4.0...v8.4.1) (2026-09-20)
 
 ### Bug Fixes
