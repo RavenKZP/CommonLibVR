@@ -93,7 +93,6 @@ namespace RE
 		void ForEachReference(std::function<BSContainer::ForEachResult(TESObjectREFR*)> a_callback);
 		void ForEachReferenceInRange(TESObjectREFR* a_origin, float a_radius, std::function<BSContainer::ForEachResult(TESObjectREFR*)> a_callback);
 		void ForEachReferenceInRange(NiPoint3 a_origin, float a_radius, std::function<BSContainer::ForEachResult(TESObjectREFR* a_ref)> a_callback);
-	
 
 		void            CancelMasterFileLoads();
 		void            CreateAllGrass();

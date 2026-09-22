@@ -91,7 +91,7 @@ namespace RE
 			if (interiorCell) {
 				a_callback(interiorCell);
 			} else {
-				if (a_radius > 4096.0f * 5.0f) { // Cellsize * LoadedCells
+				if (a_radius > 4096.0f * 5.0f) {     // Cellsize * LoadedCells
 					return ForEachCell(a_callback);  // iterate all cells in worldspace
 				}
 				if (const auto gridLength = gridCells ? gridCells->length : 0; gridLength > 0) {
@@ -126,7 +126,6 @@ namespace RE
 			return ForEachCell(a_callback);
 		}
 	}
-
 
 	void TES::ForEachReference(std::function<BSContainer::ForEachResult(TESObjectREFR* a_ref)> a_callback)
 	{
@@ -259,7 +258,7 @@ namespace RE
 			});
 		}
 	}
-  
+
 	void TES::CancelMasterFileLoads()
 	{
 		using func_t = decltype(&TES::CancelMasterFileLoads);
@@ -272,7 +271,7 @@ namespace RE
 		using func_t = decltype(&TES::CreateAllGrass);
 		REL::Relocation<func_t> func{ RELOCATION_ID(13189, 13335) };
 		return func(this);
-  }
+	}
 
 	TESObjectCELL* TES::GetCell(const NiPoint3& a_position) const
 	{
@@ -336,7 +335,7 @@ namespace RE
 		REL::Relocation<func_t> func{ RELOCATION_ID(13190, 13336) };
 		return func(this);
 	}
-	
+
 	void TES::SetCurrentCell(TESObjectCELL* a_cell, const NiPoint3& a_position, float a_unk4)
 	{
 		using func_t = decltype(&TES::SetCurrentCell);

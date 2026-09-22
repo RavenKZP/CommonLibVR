@@ -5,8 +5,8 @@
 #include "RE/B/BSTHashMap.h"
 #include "RE/B/BSTSingleton.h"
 #include "RE/N/NiSmartPointer.h"
-#include "RE/T/TESObjectCell.h"
 #include "RE/T/TES.h"
+#include "RE/T/TESObjectCell.h"
 
 namespace RE
 {

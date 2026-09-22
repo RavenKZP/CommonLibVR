@@ -280,12 +280,12 @@ namespace RE
 		});
 	}
 
-	void NiAVObject::UpdateCollisionObject(bool a_arg1) {
+	void NiAVObject::UpdateCollisionObject(bool a_arg1)
+	{
 		using func_t = decltype(&NiAVObject::UpdateCollisionObject);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(76551, 78383) }; //SE heurestics
+		static REL::Relocation<func_t> func{ RELOCATION_ID(76551, 78383) };  //SE heurestics
 		return func(this, a_arg1);
 	}
-	
 
 	void NiAVObject::UpdateHairColor(const NiColor& a_color)
 	{

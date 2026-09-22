@@ -165,12 +165,12 @@ namespace RE
 
 	void TESObjectCELL::RemoveGrass()
 	{
-		// Adding 
-		// #include "RE/B/BGSGrassManager.h" 
-		// here or in 
+		// Adding
+		// #include "RE/B/BGSGrassManager.h"
+		// here or in
 		// TESObjectCELL.h
 		// cause build to fail
-		// 
+		//
 		//return BGSGrassManager::GetSingleton()->RemoveGrassInCell(this);
 	}
 
