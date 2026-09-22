@@ -26,10 +26,19 @@ on:
       - src/**
       - res/**
       - vcpkg.json
+      - vcpkg-configuration.json
       - .github/workflows/prebuilt.yml
       - tests/prebuilt-consumer/**
       - tests/prebuilt-consumer-cmake/**
   workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        default: ""
+      attach_tag:
+        description: "If set, create/attach the bundles to this release tag (e.g. to refresh a stale published bundle)."
+        type: string
+        default: ""
   workflow_call:
     inputs:
       ref:
@@ -92,6 +101,7 @@ jobs:
           # Drop-in replacement for the lib/commonlibsse-ng source tree: same xmake.lua
           # (auto-detects the shipped lib), headers, plugin-rule templates, VR headers.
           Copy-Item xmake.lua, PREBUILT.md "$stage/"
+          Copy-Item licenses/LICENSE-hde64.txt "$stage/"
           Copy-Item -Recurse include "$stage/include"
           Copy-Item -Recurse res "$stage/res"
           Copy-Item -Recurse extern/openvr/headers "$stage/extern/openvr/headers"
@@ -193,7 +203,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/vcpkg_downloads
-          key: ${{ runner.os }}-vcpkg-downloads-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-vcpkg-downloads-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
             ${{ runner.os }}-vcpkg-downloads-
 
@@ -202,7 +212,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg_downloads
-          key: ${{ runner.os }}-vcpkg-downloads-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-vcpkg-downloads-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
             ${{ runner.os }}-vcpkg-downloads-
 
@@ -213,7 +223,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/vcpkg_binary_cache
-          key: ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-msvc-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-msvc-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
             ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-msvc-
             ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-
@@ -223,7 +233,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/vcpkg_binary_cache
-          key: ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-msvc-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-msvc-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
             ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-msvc-
             ${{ runner.os }}-vcpkg-binpkgs-x64-windows-static-md-
@@ -267,6 +277,7 @@ jobs:
           # openvr_api.lib is linked PUBLIC by the IMPORTED target, so it ships in the bundle.
           Copy-Item extern/openvr/lib/win64/openvr_api.lib "$stage/lib/"
           Copy-Item PREBUILT.md "$stage/"
+          Copy-Item licenses/LICENSE-hde64.txt "$stage/"
           # Stamp the toolset version (Prebuilt.cmake's compatibility gate); the file-version
           # resource, not the usage banner, is locale-independent and matches CMake's own format.
           $clPath = (Get-Command cl.exe -ErrorAction Stop).Source

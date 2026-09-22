@@ -32,6 +32,7 @@ namespace RE
 	class PlayerCharacter;
 	class QueuedFile;
 	class Sky;
+	class TESActorBase;
 	class TESLandTexture;
 	class TESNPC;
 	class TESObjectCELL;
@@ -50,11 +51,21 @@ namespace RE
 		inline static constexpr auto RTTI = RTTI_TES;
 		inline static constexpr auto VTABLE = VTABLE_TES;
 
+		class ParticleObjectCache
+		{
+		public:
+			// members
+			NiPointer<NiAVObject> model;   // 00
+			NiPointer<NiAVObject> clones;  // 08
+			ParticleObjectCache*  next;    // 10
+		};
+		static_assert(sizeof(ParticleObjectCache) == 0x18);
+
 		class SystemEventAdapter : public BSTEventSink<BSSystemEvent>
 		{
 		public:
-			inline static constexpr auto RTTI = RTTI_TES;
-			inline static constexpr auto VTABLE = VTABLE_TES;
+			inline static constexpr auto RTTI = RTTI_TES__SystemEventAdapter;
+			inline static constexpr auto VTABLE = VTABLE_TES__SystemEventAdapter;
 
 			~SystemEventAdapter() override;  // 00
 
@@ -84,6 +95,7 @@ namespace RE
 		void ForEachReferenceInRange(NiPoint3 a_origin, float a_radius, std::function<BSContainer::ForEachResult(TESObjectREFR* a_ref)> a_callback);
 	
 
+		void            CancelMasterFileLoads();
 		void            CreateAllGrass();
 		TESObjectCELL*  GetCell(const NiPoint3& a_position) const;
 		MATERIAL_ID     GetLandMaterialType(const NiPoint3& a_position) const;
@@ -93,6 +105,7 @@ namespace RE
 		void            RemoveAllGrass();
 		NiAVObject*     Pick(bhkPickData& a_pickData);
 		void            PurgeBufferedCells();
+		void            ResumeMasterFileLoads();
 
 		// Core interior/exterior cell-transition engine backing every cell
 		// attach/detach (interior enter/exit, coc, worldspace load).
@@ -179,11 +192,11 @@ namespace RE
 	std::uint64_t                                   unk270;                            /* 270 */                                                                              \
 	std::uint64_t                                   unk278;                            /* 278 - ctor zeroes only bytes 27C-283; real sub-object boundary unresolved */        \
 	std::uint64_t                                   unk280;                            /* 280 - ctor sets only bytes 284-285 to 0x100; real sub-object boundary unresolved */ \
-	void*                                           unk288;                            /* 288 - head of a callback-keyed clone/cache linked list, not a scalar */             \
+	ParticleObjectCache*                            particleCacheHead;                 /* 288 - head of a callback-keyed clone/cache linked list */                           \
 	SystemEventAdapter                              unk290;                            /* 290 */                                                                              \
-	std::uint64_t                                   unk2A0;                            /* 2A0 - ctor zeroes only the low 4 bytes; may be two 4-byte sub-fields */             \
-	NavMeshInfoMap*                                 unk2A8;                            /* 2A8 - lazily constructed on first access */                                         \
-	LoadedAreaBound*                                loadedAreaBound;                   /* 2B0 - refcounted */
+	std::uint64_t                                   placeableWaterCount;               /* 2A0 - ctor zeroes only the low 4 bytes; may be two 4-byte sub-fields */             \
+	NavMeshInfoMap*                                 navMeshInfoMap;                    /* 2A8 - lazily constructed on first access */                                         \
+	NiPointer<LoadedAreaBound>                      loadedAreaBound;                   /* 2B0 - refcounted */
             RUNTIME_DATA2_CONTENT
 		};
 		static_assert(sizeof(RUNTIME_DATA2) == 0x178);
@@ -229,7 +242,7 @@ namespace RE
 		TESObjectCELL**                                     exteriorBuffer;             // 0D0
 		std::uint64_t                                       unk0D8;                     // 0D8
 		std::int32_t                                        saveGridX;                  // 0E0
-		std::int32_t                                        saveGridY;                  // 0E0
+		std::int32_t                                        saveGridY;                  // 0E4
 		std::uint64_t                                       unk0E8;                     // 0E8
 		std::uint64_t                                       unk0F0;                     // 0F0
 		std::uint64_t                                       unk0F8;                     // 0F8

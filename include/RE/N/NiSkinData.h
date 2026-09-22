@@ -128,16 +128,6 @@ namespace RE
 			return REL::RelocateMember<std::uint32_t>(this, 0x58, 0x58);
 		}
 
-		// members
-		NiPointer<NiSkinPartition> skinPartition;     // 10
-		NiTransform                rootParentToSkin;  // 18
-#ifndef SKYRIM_CROSS_VR
-		BoneData*     boneData;  // 50
-		std::uint32_t bones;     // 58
-		std::uint32_t pad5C;     // 5C
-#endif
-
-	private:
 		[[nodiscard]] std::byte* GetBoneDataAddress(std::uint32_t a_idx) noexcept
 		{
 			return reinterpret_cast<std::byte*>(GetBoneData()) + (static_cast<std::size_t>(a_idx) * GetBoneDataStride());
@@ -148,6 +138,9 @@ namespace RE
 			return reinterpret_cast<const std::byte*>(GetBoneData()) + (static_cast<std::size_t>(a_idx) * GetBoneDataStride());
 		}
 
+	private:
+		// Keep private: BoneData's stride differs by runtime, so indexing
+		// this pointer with sizeof(BoneData) is wrong on SKYRIM_CROSS_VR builds.
 		[[nodiscard]] BoneData* GetBoneData() noexcept
 		{
 			return REL::RelocateMember<BoneData*>(this, 0x50, 0x50);
@@ -157,6 +150,16 @@ namespace RE
 		{
 			return REL::RelocateMember<BoneData*>(this, 0x50, 0x50);
 		}
+
+	public:
+		// members
+		NiPointer<NiSkinPartition> skinPartition;     // 10
+		NiTransform                rootParentToSkin;  // 18
+#ifndef SKYRIM_CROSS_VR
+		BoneData*     boneData;  // 50
+		std::uint32_t bones;     // 58
+		std::uint32_t pad5C;     // 5C
+#endif
 	};
 	STATIC_ASSERT_SIZE(NiSkinData, 0x60, 0x60, 0x60, 0x50, 0x60);
 }
