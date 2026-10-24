@@ -15,8 +15,8 @@ namespace RE
 		// override (PlayerInputHandler)
 		bool CanProcess(InputEvent* a_event) override;  // 01
 #ifdef EXCLUSIVE_SKYRIM_VR
-		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_data) override;  // 04
+		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_data) override;  // 06
 #endif
 	};
-	STATIC_ASSERT_SIZE(ToggleRunHandler, 0x10, 0x28);
+	STATIC_ASSERT_SIZE(ToggleRunHandler, 0x10);
 }

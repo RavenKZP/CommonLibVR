@@ -34,6 +34,7 @@ set(SOURCES
 	include/RE/A/ActorValueOwner.h
 	include/RE/A/ActorValues.h
 	include/RE/A/AddCallbackVisitor.h
+	include/RE/A/AddCellGrassTask.h
 	include/RE/A/AlchemyItem.h
 	include/RE/A/AlchemyMenu.h
 	include/RE/A/AmiiboEvent.h
@@ -303,6 +304,7 @@ set(SOURCES
 	include/RE/B/BSInvMarker.h
 	include/RE/B/BSJobs.h
 	include/RE/B/BSKeyboardDevice.h
+	include/RE/B/BSLODTriShape.h
 	include/RE/B/BSLeafAnimNode.h
 	include/RE/B/BSLensFlareRenderData.h
 	include/RE/B/BSLight.h
@@ -322,11 +324,13 @@ set(SOURCES
 	include/RE/B/BSLightingShaderMaterialParallaxOcc.h
 	include/RE/B/BSLightingShaderMaterialSnow.h
 	include/RE/B/BSLightingShaderProperty.h
+	include/RE/B/BSLocklessSimpleList.h
 	include/RE/B/BSLookAtModifier.h
 	include/RE/B/BSLookAtModifierBoneData.h
 	include/RE/B/BSMasterParticleSystem.h
 	include/RE/B/BSMaterialObject.h
 	include/RE/B/BSMemStorage.h
+	include/RE/B/BSMeshLODTriShape.h
 	include/RE/B/BSModelDB.h
 	include/RE/B/BSMouseDevice.h
 	include/RE/B/BSMultiBound.h
@@ -491,6 +495,7 @@ set(SOURCES
 	include/RE/B/BSWin32MouseDevice.h
 	include/RE/B/BSWin32SaveDataSystemUtility.h
 	include/RE/B/BSWin32SystemUtility.h
+	include/RE/B/BSWin32TaskletData.h
 	include/RE/B/BSWin32TaskletManager.h
 	include/RE/B/BSWin32VirtualKeyboardDevice.h
 	include/RE/B/BSWindModifier.h
@@ -539,6 +544,7 @@ set(SOURCES
 	include/RE/B/bhkConstraint.h
 	include/RE/B/bhkContactListener.h
 	include/RE/B/bhkEntity.h
+	include/RE/B/bhkEntityListener.h
 	include/RE/B/bhkGroupConstraint.h
 	include/RE/B/bhkListShape.h
 	include/RE/B/bhkListShapeCinfo.h
@@ -576,6 +582,7 @@ set(SOURCES
 	include/RE/C/Calendar.h
 	include/RE/C/CalibrationOptionMenu.h
 	include/RE/C/CalmEffect.h
+	include/RE/C/CellLoaderTask.h
 	include/RE/C/CellMopp.h
 	include/RE/C/ChainExplosion.h
 	include/RE/C/CharEvent.h
@@ -757,6 +764,7 @@ set(SOURCES
 	include/RE/D/DispelEffect.h
 	include/RE/D/DoNothingUnhandledPolicy.h
 	include/RE/D/DragonCameraState.h
+	include/RE/D/DragonRidingHandler.h
 	include/RE/D/DragonSoulsGained.h
 	include/RE/D/DrawWorld.h
 	include/RE/D/DropObjectFunctor.h
@@ -773,6 +781,7 @@ set(SOURCES
 	include/RE/E/EscortActorPackageData.h
 	include/RE/E/EtherealizationEffect.h
 	include/RE/E/Explosion.h
+	include/RE/E/ExteriorCellLoader.h
 	include/RE/E/ExtraAction.h
 	include/RE/E/ExtraActivateLoopSound.h
 	include/RE/E/ExtraActivateRef.h
@@ -1658,6 +1667,7 @@ set(SOURCES
 	include/RE/N/NiTriShapeData.h
 	include/RE/N/NiTriStrips.h
 	include/RE/N/NiTriStripsData.h
+	include/RE/N/NiUpdateData.h
 	include/RE/N/NiVisibleArray.h
 	include/RE/N/NightEyeEffect.h
 	include/RE/N/NonActorMagicCaster.h
@@ -1831,6 +1841,7 @@ set(SOURCES
 	include/RE/T/TESActorLocationChangeEvent.h
 	include/RE/T/TESAmmo.h
 	include/RE/T/TESAttackDamageForm.h
+	include/RE/T/TESAudio.h
 	include/RE/T/TESBipedModelForm.h
 	include/RE/T/TESBookReadEvent.h
 	include/RE/T/TESBoundAnimObject.h
@@ -2019,6 +2030,7 @@ set(SOURCES
 	include/RE/V/VertexDesc.h
 	include/RE/V/VirtualMachine.h
 	include/RE/V/VoiceSpellFireHandler.h
+	include/RE/V/VrSwimHandler.h
 	include/RE/V/VrWandTouchpadPositionEvent.h
 	include/RE/V/VrWandTouchpadSwipeEvent.h
 	include/RE/W/WSActivateRollover.h
@@ -2159,6 +2171,7 @@ set(SOURCES
 	src/RE/B/BSCubeMapCamera.cpp
 	src/RE/B/BSCullingProcess.cpp
 	src/RE/B/BSDirectInputManager.cpp
+	src/RE/B/BSDismemberSkinInstance.cpp
 	src/RE/B/BSEffectShaderData.cpp
 	src/RE/B/BSExtraData.cpp
 	src/RE/B/BSFaceGenAnimationData.cpp
@@ -2203,6 +2216,7 @@ set(SOURCES
 	src/RE/B/BSResponse.cpp
 	src/RE/B/BSScaleformManager.cpp
 	src/RE/B/BSScaleformTranslator.cpp
+	src/RE/B/BSSceneGraph.cpp
 	src/RE/B/BSScriptObjectBindPolicy.cpp
 	src/RE/B/BSShaderAccumulator.cpp
 	src/RE/B/BSShaderProperty.cpp
@@ -2212,9 +2226,11 @@ set(SOURCES
 	src/RE/B/BSSystemFileStorage.cpp
 	src/RE/B/BSTArray.cpp
 	src/RE/B/BSTCreateFactoryManager.cpp
+	src/RE/B/BSTask.cpp
 	src/RE/B/BSTempNodeManager.cpp
 	src/RE/B/BSTreeNode.cpp
 	src/RE/B/BSUIMessageData.cpp
+	src/RE/B/BSValueNode.cpp
 	src/RE/B/BSVirtualKeyboardDevice.cpp
 	src/RE/B/BSVisit.cpp
 	src/RE/B/BSWin32GamepadDevice.cpp
@@ -2232,10 +2248,12 @@ set(SOURCES
 	src/RE/B/BookMenu.cpp
 	src/RE/B/BooksRead.cpp
 	src/RE/B/bhkCharProxyController.cpp
+	src/RE/B/bhkCollisionFilter.cpp
 	src/RE/B/bhkRigidBody.cpp
 	src/RE/C/CFilter.cpp
 	src/RE/C/Calendar.cpp
 	src/RE/C/ChainExplosion.cpp
+	src/RE/C/Character.cpp
 	src/RE/C/ChestsLooted.cpp
 	src/RE/C/ChildSelectorBase.cpp
 	src/RE/C/CollisionLayers.cpp
@@ -2456,6 +2474,7 @@ set(SOURCES
 	src/RE/M/MessageBoxMenu.cpp
 	src/RE/M/Misc.cpp
 	src/RE/M/MissileProjectile.cpp
+	src/RE/M/MovementControllerNPC.cpp
 	src/RE/N/NativeFunctionBase.cpp
 	src/RE/N/NextChildSelector.cpp
 	src/RE/N/NiAVObject.cpp
@@ -2487,6 +2506,7 @@ set(SOURCES
 	src/RE/N/NiNode.cpp
 	src/RE/N/NiObject.cpp
 	src/RE/N/NiObjectNET.cpp
+	src/RE/N/NiParticleSystem.cpp
 	src/RE/N/NiPick.cpp
 	src/RE/N/NiPoint2.cpp
 	src/RE/N/NiPoint3.cpp
@@ -2499,6 +2519,7 @@ set(SOURCES
 	src/RE/N/NiTexture.cpp
 	src/RE/N/NiTimeController.cpp
 	src/RE/N/NiTransform.cpp
+	src/RE/N/NiTriShape.cpp
 	src/RE/O/Object.cpp
 	src/RE/O/ObjectTypeInfo.cpp
 	src/RE/O/ObjectTypes.cpp
@@ -2545,6 +2566,7 @@ set(SOURCES
 	src/RE/T/TESAIForm.cpp
 	src/RE/T/TESActorBase.cpp
 	src/RE/T/TESAmmo.cpp
+	src/RE/T/TESAudio.cpp
 	src/RE/T/TESCamera.cpp
 	src/RE/T/TESCameraState.cpp
 	src/RE/T/TESClimate.cpp

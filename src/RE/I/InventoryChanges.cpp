@@ -30,15 +30,13 @@ namespace RE
 
 	void InventoryChanges::GenerateLeveledListChanges()
 	{
-		using func_t = decltype(&InventoryChanges::GenerateLeveledListChanges);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(15829, 16068) };
-		return func(this);
+		InitScripts();
 	}
 
 	std::int16_t InventoryChanges::GetItemCount(RE::TESBoundObject* a_obj)
 	{
 		using func_t = decltype(&InventoryChanges::GetItemCount);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(15868, 16047) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15868, 16108) };
 		return func(this, a_obj);
 	}
 
@@ -131,7 +129,7 @@ namespace RE
 	void InventoryChanges::SetUniqueID(ExtraDataList* a_itemList, TESForm* a_oldForm, TESForm* a_newForm)
 	{
 		using func_t = decltype(&InventoryChanges::SetUniqueID);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(15907, 16149) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15907, 16147) };
 		return func(this, a_itemList, a_oldForm, a_newForm);
 	}
 

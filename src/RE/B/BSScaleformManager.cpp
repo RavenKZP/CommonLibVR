@@ -18,7 +18,7 @@ namespace RE
 	bool BSScaleformManager::IsValidName(const char* a_name)
 	{
 		using func_t = decltype(&BSScaleformManager::IsValidName);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(80307, 82331) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(80307, AE_CHECK(SKSE::RUNTIME_SSE_1_7_99, 82331, 524270)) };
 		return func(this, a_name);
 	}
 

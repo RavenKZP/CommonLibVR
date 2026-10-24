@@ -48,13 +48,13 @@ namespace RE
 			std::uint32_t ThreadProc() override;  // 01
 
 			// members
-			BSEventFlag   newWork;      // 58
-			BSEventFlag   workDone;     // 60
-			RUNNING_STATE states[2];    // 68
-			volatile bool bShutDown;    // 70
-			volatile bool bProcessing;  // 71
-			volatile bool bRunning;     // 72
+			BSEventFlag   newWork;      // 58, 60
+			BSEventFlag   workDone;     // 60, 68
+			RUNNING_STATE states[2];    // 68, 70
+			volatile bool bShutDown;    // 70, 78
+			volatile bool bProcessing;  // 71, 79
+			volatile bool bRunning;     // 72, 7A
 		};
-		static_assert(sizeof(ServingThread) == 0x78);
+		STATIC_ASSERT_SIZE(ServingThread, 0x78, 0x80);
 	};
 }

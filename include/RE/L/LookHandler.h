@@ -20,8 +20,8 @@ namespace RE
 		// override (PlayerInputHandler)
 		bool CanProcess(InputEvent* a_event) override;  // 01
 #ifdef EXCLUSIVE_SKYRIM_VR
-		void ProcessThumbstick(ThumbstickEvent* a_event, PlayerControlsData* a_data) override;  // 02
-		void ProcessMouseMove(MouseMoveEvent* a_event, PlayerControlsData* a_data) override;    // 03
+		void ProcessThumbstick(ThumbstickEvent* a_event, PlayerControlsData* a_data) override;  // 04
+		void ProcessMouseMove(MouseMoveEvent* a_event, PlayerControlsData* a_data) override;    // 05
 #endif
 
 #ifdef ENABLE_SKYRIM_AE
@@ -38,6 +38,18 @@ namespace RE
 
 		RUNTIME_DATA_ACCESSOR_VERSIONED_OPTIONAL_EX(AE1799_RUNTIME_DATA, GetAe1799RuntimeData, SKSE::RUNTIME_SSE_1_7_99, 0x10);
 #endif
+
+		// VR-only members; nullptr from the accessor on SE/AE
+		struct VR_RUNTIME_DATA
+		{
+			std::uint64_t unk10;     // 10
+			std::uint8_t  unk18;     // 18
+			std::uint8_t  pad19[7];  // 19
+		};
+		VR_ONLY_POINTER_ACCESSOR(VR_RUNTIME_DATA, GetVRRuntimeData, 0x10);
+#ifdef EXCLUSIVE_SKYRIM_VR
+		VR_RUNTIME_DATA vrRuntimeData;  // 10
+#endif
 	};
-	STATIC_ASSERT_SIZE(LookHandler, 0x10, 0x10, 0x28, 0x10);
+	STATIC_ASSERT_SIZE(LookHandler, 0x10, 0x10, 0x20, 0x10);
 }

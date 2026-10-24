@@ -15,7 +15,7 @@ namespace REX::INI
 		constexpr bool is_long_integral_v = std::_Is_any_of_v<std::remove_cv_t<T>, std::uint8_t, std::uint16_t, std::uint32_t, std::int8_t, std::int16_t, std::int32_t>;
 
 		template <class T>
-		void SettingLoad<T>(
+		void SettingLoad(
 			void* a_data,
 			sec_t a_section,
 			key_t a_key,
@@ -46,7 +46,7 @@ namespace REX::INI
 		template void SettingLoad<std::string>(void*, sec_t, key_t, std::string&, std::string&);
 
 		template <class T>
-		void SettingSave<T>(
+		void SettingSave(
 			void* a_data,
 			sec_t a_section,
 			key_t a_key,
@@ -121,7 +121,7 @@ namespace REX::JSON
 	namespace Impl
 	{
 		template <class T>
-		void SettingLoad<T>(
+		void SettingLoad(
 			void*  a_data,
 			path_t a_path,
 			T&     a_value,
@@ -147,7 +147,7 @@ namespace REX::JSON
 		template void SettingLoad<std::string>(void*, path_t, std::string&, std::string&);
 
 		template <class T>
-		void SettingSave<T>(
+		void SettingSave(
 			void*  a_data,
 			path_t a_path,
 			T&     a_value)
@@ -266,7 +266,7 @@ namespace REX::TOML
 		}
 
 		template <class T>
-		void SettingLoad<T>(
+		void SettingLoad(
 			void* a_data,
 			sec_t a_section,
 			key_t a_key,
@@ -307,7 +307,7 @@ namespace REX::TOML
 		template void SettingLoad<std::string>(void*, sec_t, key_t, std::string&, std::string&);
 
 		template <class T>
-		void SettingSave<T>(
+		void SettingSave(
 			void* a_data,
 			sec_t a_section,
 			key_t a_key,

@@ -37,6 +37,24 @@ namespace RE
 			kPrecipitationOcclusionMap = 0x1C  // SE/AE only -- VR has no handler at this slot
 		};
 
+		// Render flags passed to NiCamera::RenderCameraView and through the finish handlers and
+		// BSBatchRenderer to the shaders' SetupGeometry. Bits marked kUnk have no confirmed meaning.
+		enum class RENDER_FLAG : std::uint32_t
+		{
+			kNone = 0,
+			kUseJitter = 1 << 0,           // BSGraphics::State::SetCameraData: a_useJitter = flags & 1
+			kUnk002 = 1 << 1,              // set for the pre/post resolve depth render; BSLightingShader zeroes a constant when set
+			kApplyAlphaProperty = 1 << 2,  // BSRenderPass draw applies the pass's NiProperty state; RenderEffects always sets it
+			kCubeMap = 1 << 3,             // BSCubeMapCamera::RenderFaces; also stops ApplyPassAlphaCullState overriding the cull mode
+			kNoMotionVectors = 1 << 4,     // BSLightingShader uses the current world matrix as the previous one; Main::RenderFirstPersonView sets it while paused
+			kDepthPrepass = 1 << 5,        // world depth prepass (0x21) and UI3D depth; RenderDecalPassesAlt skips when set
+			kUnk040 = 1 << 6,              // only Main::RenderFirstPersonView passes it (0x43)
+			kUnk080 = 1 << 7,              // tested in RenderPostAccumulationPasses (with 0x200)
+			kUnk100 = 1 << 8,              // tested in FinishAccumulatingSharedModes; with kCubeMap suppresses the cull override
+			kUnk200 = 1 << 9,              // UI3DSceneManager::Render post-resolve depth
+			kUpdateViewport = 1 << 10      // NiCamera::RenderCameraView calls Renderer::UpdateViewPort
+		};
+
 		class SunOcclusionTest
 		{
 		public:
@@ -77,18 +95,19 @@ namespace RE
 		static constexpr std::ptrdiff_t kRuntimeDataSE = 0x130;
 		static constexpr std::ptrdiff_t kRuntimeDataVR = 0x158;
 
+		// noFade, isDirectionalShadowMap and shadowMapIndex are named from constructor initialisers only; no reader confirms them yet.
 		struct FLAT_RUNTIME_DATA
 		{
 #define FLAT_RUNTIME_DATA_CONTENT                                                                                                              \
 	std::uint8_t     unk58[0x4];               /* 58 */                                                                                        \
-	bool             unk5C;                    /* 5C */                                                                                        \
+	bool             useEqualDepthTest;        /* 5C */                                                                                        \
 	std::uint32_t    sunPixelCount;            /* 60 */                                                                                        \
 	bool             waitingForSunQuery;       /* 64 */                                                                                        \
 	float            percentSunOccludedStored; /* 68 */                                                                                        \
 	std::uint8_t     pad6C[0x4];               /* 6C */                                                                                        \
 	SunOcclusionTest sunOcclusionTests[3];     /* 70 */                                                                                        \
 	bool             unkB8;                    /* B8 */                                                                                        \
-	bool             unkB9;                    /* B9 */                                                                                        \
+	bool             noFade;                   /* B9 */                                                                                        \
 	bool             unkBA;                    /* BA */                                                                                        \
 	std::uint8_t     padBB[0x5];               /* BB */                                                                                        \
 	std::uint8_t     unkC0[0x10];              /* C0 */                                                                                        \
@@ -104,8 +123,8 @@ namespace RE
 	bool             unk12A;                   /* 12A */                                                                                       \
 	bool             unk12B;                   /* 12B */                                                                                       \
 	bool             drawDecals;               /* 12C */                                                                                       \
-	bool             unk12D;                   /* 12D */                                                                                       \
-	bool             unk12E;                   /* 12E */                                                                                       \
+	bool             isShadowMapAccumulator;   /* 12D */                                                                                       \
+	bool             isDirectionalShadowMap;   /* 12E */                                                                                       \
 	BSBatchRenderer* batchRenderer;            /* 130 */                                                                                       \
 	std::uint32_t    currentPass;              /* 138 */                                                                                       \
 	std::uint32_t    currentBucket;            /* 13C */                                                                                       \
@@ -116,13 +135,14 @@ namespace RE
 		void*            shaderManagerState;    /* 148 -- BSShaderManager::State*, void* to avoid a circular include with BSShaderManager.h */ \
 		ShadowSceneNode* activeShadowSceneNode; /* 148 */                                                                                      \
 	};                                                                                                                                         \
-	RENDER_MODE   renderMode;  /* 150 */                                                                                                       \
-	std::uint8_t  pad154[0x4]; /* 154 */                                                                                                       \
-	void*         unk158;      /* 158 */                                                                                                       \
-	void*         unk160;      /* 160 */                                                                                                       \
-	std::uint32_t unk168;      /* 168 */                                                                                                       \
-	NiPoint3      eyePosition; /* 16C */                                                                                                       \
-	std::uint8_t  unk178[0x8]; /* 178 */
+	RENDER_MODE   renderMode;       /* 150 */                                                                                                  \
+	std::uint8_t  pad154[0x4];      /* 154 */                                                                                                  \
+	void*         unk158;           /* 158 */                                                                                                  \
+	std::uint32_t flagOverrideMode; /* 160 */                                                                                                  \
+	std::uint32_t flagOverrideMask; /* 164 */                                                                                                  \
+	std::uint32_t shadowMapIndex;   /* 168 */                                                                                                  \
+	NiPoint3      eyePosition;      /* 16C */                                                                                                  \
+	std::uint8_t  unk178[0x8];      /* 178 */
 
 			FLAT_RUNTIME_DATA_CONTENT
 		};
@@ -137,14 +157,14 @@ namespace RE
 		{
 #define VR_RUNTIME_DATA_CONTENT                                   \
 	std::uint8_t     unk58[0x4];               /* 58 */           \
-	bool             unk5C;                    /* 5C */           \
+	bool             useEqualDepthTest;        /* 5C */           \
 	std::uint32_t    sunPixelCount;            /* 60 */           \
 	bool             waitingForSunQuery;       /* 64 */           \
 	float            percentSunOccludedStored; /* 68 */           \
 	std::uint8_t     pad6C[0x4];               /* 6C */           \
 	SunOcclusionTest sunOcclusionTests[3];     /* 70 */           \
 	bool             unkB8;                    /* B8 */           \
-	bool             unkB9;                    /* B9 */           \
+	bool             noFade;                   /* B9 */           \
 	bool             unkBA;                    /* BA */           \
 	std::uint8_t     padBB[0x5];               /* BB */           \
 	std::uint8_t     unkC0[0x10];              /* C0 */           \
@@ -160,8 +180,8 @@ namespace RE
 	bool             unk12A;                   /* 12A */          \
 	bool             unk12B;                   /* 12B */          \
 	bool             drawDecals;               /* 12C */          \
-	bool             unk12D;                   /* 12D */          \
-	bool             unk12E;                   /* 12E */          \
+	bool             isShadowMapAccumulator;   /* 12D */          \
+	bool             isDirectionalShadowMap;   /* 12E */          \
 	std::uint8_t     unk12F[0x158 - 0x12F];    /* 12F, VR only */ \
 	BSBatchRenderer* batchRenderer;            /* 158 */          \
 	std::uint32_t    currentPass;              /* 160 */          \
@@ -172,15 +192,16 @@ namespace RE
 	RENDER_MODE      renderMode;               /* 178 */          \
 	std::uint8_t     pad17c[0x4];              /* 17C */          \
 	void*            unk180;                   /* 180 */          \
-	void*            unk188;                   /* 188 */          \
-	std::uint32_t    unk190;                   /* 190 */          \
+	std::uint32_t    flagOverrideMode;         /* 188 */          \
+	std::uint32_t    flagOverrideMask;         /* 18C */          \
+	std::uint32_t    shadowMapIndex;           /* 190 */          \
 	NiPoint3         eyePosition;              /* 194 */          \
 	std::uint8_t     unk1A0[0x10];             /* 1A0 */
 
 			VR_RUNTIME_DATA_CONTENT
 		};
 		static_assert(sizeof(VR_RUNTIME_DATA) == 0x158);
-		static_assert(offsetof(VR_RUNTIME_DATA, unk12E) == offsetof(FLAT_RUNTIME_DATA, unk12E));
+		static_assert(offsetof(VR_RUNTIME_DATA, isDirectionalShadowMap) == offsetof(FLAT_RUNTIME_DATA, isDirectionalShadowMap));
 		static_assert(offsetof(VR_RUNTIME_DATA, sunOcclusionTests) == 0x70 - 0x58);
 		static_assert(offsetof(VR_RUNTIME_DATA, silhouetteColor) == 0x118 - 0x58);
 		static_assert(offsetof(VR_RUNTIME_DATA, firstPerson) == kFlagsOffset - 0x58);
@@ -191,14 +212,14 @@ namespace RE
 
 		struct RUNTIME_FLAGS
 		{
-			bool         firstPerson;  // 128
-			bool         unk129;       // 129
-			bool         unk12A;       // 12A
-			bool         unk12B;       // 12B
-			bool         drawDecals;   // 12C
-			bool         unk12D;       // 12D
-			bool         unk12E;       // 12E
-			std::uint8_t unk12F;       // 12F
+			bool         firstPerson;             // 128
+			bool         unk129;                  // 129
+			bool         unk12A;                  // 12A
+			bool         unk12B;                  // 12B
+			bool         drawDecals;              // 12C
+			bool         isShadowMapAccumulator;  // 12D
+			bool         isDirectionalShadowMap;  // 12E
+			std::uint8_t unk12F;                  // 12F
 		};
 		static_assert(offsetof(RUNTIME_FLAGS, firstPerson) == 0);
 		static_assert(offsetof(RUNTIME_FLAGS, drawDecals) == 0x4);

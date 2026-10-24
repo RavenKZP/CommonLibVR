@@ -139,6 +139,13 @@ namespace RE
 
 		enum class CellState
 		{
+			kUnloaded = 0,
+			kUnloading = 1,
+			kDataLoaded = 2,
+			kBuilding3D = 3,
+			kUnattached = 4,
+			kDetaching = 5,
+			kAttaching = 6,
 			kAttached = 7
 		};
 
@@ -203,7 +210,7 @@ namespace RE
 		void                                GenerateGrass();
 		[[nodiscard]] EXTERIOR_DATA*        GetCoordinates();
 		[[nodiscard]] TESFaction*           GetFactionOwner();
-		TESObjectLAND*                      GetLandscape();
+		[[nodiscard]] TESObjectLAND*        GetLandscape() const;
 		[[nodiscard]] INTERIOR_DATA*        GetLighting();
 		[[nodiscard]] BGSLocation*          GetLocation() const;
 		[[nodiscard]] float                 GetNorthRotation();

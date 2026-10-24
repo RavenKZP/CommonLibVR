@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RE/B/BSContainer.h"
+#include "RE/B/BSLocklessSimpleList.h"
 #include "RE/B/BSPointerHandle.h"
 #include "RE/B/BSSimpleList.h"
 #include "RE/B/BSTEvent.h"
@@ -112,52 +113,32 @@ namespace RE
 		virtual ~MagicTarget();  // 00
 
 		// add
-		virtual bool AddTarget(AddTargetData& a_targetData);  // 01
-#ifndef ENABLE_SKYRIM_VR
-		virtual TESObjectREFR*               GetTargetStatsObject();                                                               // 02 - { return false; }
-		[[nodiscard]] virtual bool           MagicTargetIsActor() const;                                                           // 03 - { return false; }
-		virtual bool                         IsInvulnerable();                                                                     // 04 - { return false; }
-		virtual void                         InvalidateCommandedActorEffect(ActiveEffect* a_effect);                               // 05 - { return; }
-		virtual bool                         CanAddActiveEffect() = 0;                                                             // 06
-		virtual BSSimpleList<ActiveEffect*>* GetActiveEffectList() = 0;                                                            // 07
-		virtual void                         EffectAdded(ActiveEffect* a_effect);                                                  // 08 - { return; }
-		virtual void                         EffectRemoved(ActiveEffect* a_effect);                                                // 09 - { return; }
-		virtual float                        CheckResistance(MagicItem* a_magicItem, Effect* a_effect, TESBoundObject* a_object);  // 0A - { return 1.0; }
-		virtual bool                         CheckAbsorb(Actor* a_actor, MagicItem* a_magicItem, const Effect* a_effect);          // 0B - { return false; }
+		virtual bool               AddTarget(AddTargetData& a_targetData);                  // 01
+		virtual TESObjectREFR*     GetTargetStatsObject();                                  // 02 - { return false; }
+		[[nodiscard]] virtual bool MagicTargetIsActor() const;                              // 03 - { return false; }
+		virtual bool               IsInvulnerable();                                        // 04 - { return false; }
+		virtual void               InvalidateCommandedActorEffect(ActiveEffect* a_effect);  // 05 - { return; }
+		virtual bool               CanAddActiveEffect() = 0;                                // 06
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
+		virtual BSSimpleList<ActiveEffect*>* GetActiveEffectList() = 0;  // 07
 #else
-		TESObjectREFR*     GetTargetStatsObject();                                  // 02 - { return false; }
-		[[nodiscard]] bool MagicTargetIsActor() const;                              // 03 - { return false; }
-		bool               IsInvulnerable();                                        // 04 - { return false; }
-		void               InvalidateCommandedActorEffect(ActiveEffect* a_effect);  // 05 - { return; }
-		bool               CanAddActiveEffect();                                    // 06
-
-		/**
-		 * @brief Get the list of active effects on this magic target
-		 * @return Pointer to list of active effects
-		 * 
-		 * @warning In VR-enabled builds (SKYRIM_CROSS_VR or EXCLUSIVE_SKYRIM_VR),
-		 *          behavior differs depending on the runtime:
-		 * 
-		 * @note When running on Skyrim SE/AE: Calls through the game's vtable and
-		 *       returns the native persistent list. The list remains valid and can
-		 *       be safely stored or iterated multiple times.
-		 * 
-		 * @note When running on Skyrim VR: Returns a thread-local temporary snapshot.
-		 *       VR has no native GetActiveEffectList() - this is a compatibility shim.
-		 *       The returned pointer is ONLY valid until the next call to this function
-		 *       on the same thread. DO NOT store the pointer. DO NOT call recursively.
-		 *       Iterate immediately and discard.
-		 *       For robust VR code, use MagicTarget::VisitActiveEffects() instead.
-		 */
-		BSSimpleList<ActiveEffect*>* GetActiveEffectList();
-		void                         EffectAdded(ActiveEffect* a_effect);                                                  // 08 - { return; }
-		void                         EffectRemoved(ActiveEffect* a_effect);                                                // 09 - { return; }
-		float                        CheckResistance(MagicItem* a_magicItem, Effect* a_effect, TESBoundObject* a_object);  // 0A - { return 1.0; }
-		bool                         CheckAbsorb(Actor* a_actor, MagicItem* a_magicItem, const Effect* a_effect);          // 0B - { return false; }
+		// Slot 07 exists on every runtime: SE/AE return a BSSimpleList, VR a BSLocklessSimpleList<ActiveEffect*> (see GetVRActiveEffectList).
+		virtual void* GetActiveEffectListNative() = 0;  // 07
 #endif
-		bool DispelEffect(MagicItem* a_spell, BSPointerHandle<Actor>& a_caster, ActiveEffect* a_effect = nullptr);
+		virtual void  EffectAdded(ActiveEffect* a_effect);                                                  // 08 - { return; }
+		virtual void  EffectRemoved(ActiveEffect* a_effect);                                                // 09 - { return; }
+		virtual float CheckResistance(MagicItem* a_magicItem, Effect* a_effect, TESBoundObject* a_object);  // 0A - { return 1.0; }
+		virtual bool  CheckAbsorb(Actor* a_actor, MagicItem* a_magicItem, const Effect* a_effect);          // 0B - { return false; }
+		bool          DispelEffect(MagicItem* a_spell, BSPointerHandle<Actor>& a_caster, ActiveEffect* a_effect = nullptr);
+#if defined(SKYRIM_CROSS_VR)
+		// SE/AE's persistent list; nullptr on VR, whose list is a BSLocklessSimpleList (see GetVRActiveEffectList).
+		// Exclusive VR builds only have GetVRActiveEffectList().
+		[[nodiscard]] BSSimpleList<ActiveEffect*>* GetActiveEffectList();
+#endif
 #if defined(ENABLE_SKYRIM_VR)
-		void DispelEffectsWithArchetype(Archetype a_type, bool a_force);
+		// VR's persistent list; nullptr when not running on VR.
+		[[nodiscard]] BSLocklessSimpleList<ActiveEffect*>* GetVRActiveEffectList();
+		void                                               DispelEffectsWithArchetype(Archetype a_type, bool a_force);
 #endif
 		Actor* GetTargetAsActor();
 		bool   HasEffectWithArchetype(Archetype a_type);
@@ -165,8 +146,9 @@ namespace RE
 		bool   HasMagicEffectWithKeyword(BGSKeyword* a_keyword, MagicItem** a_spellOut);
 		void   VisitEffects(ForEachActiveEffectVisitor& visitor);
 
-#ifdef ENABLE_SKYRIM_VR
-		//VR requires a visitor to access all items
+		// Visitor helpers over the active effect list. They run the engine's own walk (VisitEffects), which is
+		// the same function on every runtime and is the only walk that is correct on VR: VR's list uses the
+		// engine's shared_ptr spin lock, which a plugin cannot reliably take itself.
 		class GetEffectCount : public MagicTarget::ForEachActiveEffectVisitor
 		{
 		public:
@@ -195,10 +177,10 @@ namespace RE
 			{
 				if (m_count == m_n) {
 					m_result = effect;
-					return BSContainer::ForEachResult::kContinue;
+					return BSContainer::ForEachResult::kStop;
 				}
 				m_count++;
-				return BSContainer::ForEachResult::kStop;
+				return BSContainer::ForEachResult::kContinue;
 			}
 
 			ActiveEffect* GetResult() { return m_result; }
@@ -224,19 +206,25 @@ namespace RE
 			std::function<BSContainer::ForEachResult(ActiveEffect*)> m_functor;
 		};
 
+		/**
+		 * @brief Call a_func for each active effect, on every runtime (return kStop to end early).
+		 *
+		 * Unlike the engine's own list, the walk is not locked on SE/AE, and on VR the ActiveEffect objects are
+		 * not refcounted: another thread can unlink or delete an effect while it runs. Finish with the effect
+		 * inside the callback and copy out plain data (base effect, flags); do not keep the ActiveEffect*,
+		 * call into script, or nest a walk on the same target. ActiveEffect::Dispel only flags the effect, so
+		 * it is safe to call from the callback.
+		 */
 		void VisitActiveEffects(std::function<BSContainer::ForEachResult(ActiveEffect*)> func)
 		{
 			EffectVisitor visitor(func);
-			ForEachActiveEffect(visitor);
+			VisitEffects(visitor);
 		}
 
 		void ForEachActiveEffect(MagicTarget::ForEachActiveEffectVisitor& visitor)
 		{
-			using func_t = decltype(&MagicTarget::ForEachActiveEffect);
-			static REL::Relocation<func_t> func{ REL::ID(33756) };
-			func(this, visitor);
+			VisitEffects(visitor);
 		}
-#endif
 
 		// members
 		SpellDispelData* postUpdateDispelList;  // 08

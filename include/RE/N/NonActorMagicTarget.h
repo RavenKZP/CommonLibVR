@@ -25,16 +25,26 @@ namespace RE
 		ExtraDataType GetType() const override;  // 01 - { return kNonActorMagicTarget; }
 
 		// override (MagicTarget)
-		bool AddTarget(AddTargetData& a_targetData) override;  // 01
-#ifndef ENABLE_SKYRIM_VR
-		TESObjectREFR*               GetTargetStatsObject() override;  // 02 - { return targetObject; }
-		bool                         CanAddActiveEffect() override;    // 06 - { return true; }
-		BSSimpleList<ActiveEffect*>* GetActiveEffectList() override;   // 07 - { return &activeEffects; }
+		bool           AddTarget(AddTargetData& a_targetData) override;  // 01
+		TESObjectREFR* GetTargetStatsObject() override;                  // 02 - { return targetObject; }
+		bool           CanAddActiveEffect() override;                    // 06 - { return true; }
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
+		BSSimpleList<ActiveEffect*>* GetActiveEffectList() override;  // 07
+#else
+		void* GetActiveEffectListNative() override;  // 07
 #endif
 
 		// members
-		TESObjectREFR*              targetObject;   // 28
+		TESObjectREFR* targetObject;  // 28
+#if defined(EXCLUSIVE_SKYRIM_VR)
+		BSLocklessSimpleList<ActiveEffect*> activeEffects;  // 30 - walk it with VisitActiveEffects()
+#elif defined(SKYRIM_CROSS_VR)
+		// BSSimpleList on SE/AE, BSLocklessSimpleList on VR: read it through GetActiveEffectList() (SE/AE),
+		// GetVRActiveEffectList() or VisitActiveEffects()
+		std::uint8_t activeEffectsStorage[0x10];  // 30
+#else
 		BSSimpleList<ActiveEffect*> activeEffects;  // 30
+#endif
 	};
 	static_assert(sizeof(NonActorMagicTarget) == 0x40);
 }

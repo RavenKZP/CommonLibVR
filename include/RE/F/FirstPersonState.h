@@ -30,17 +30,19 @@ namespace RE
 #else
 		void          Unk_03();             // 03 - Multi-runtime
 #endif
+#ifndef SKYRIM_CROSS_VR
 		void Update(BSTSmartPointer<TESCameraState>& a_nextState) override;  // 03/04
 		void GetRotation(NiQuaternion& a_rotation) override;                 // 04/05
 		void GetTranslation(NiPoint3& a_translation) override;               // 05/06
 		void SaveGame(BGSSaveFormBuffer* a_buf) override;                    // 06/07
 		void LoadGame(BGSLoadFormBuffer* a_buf) override;                    // 07/08
 		void Revert(BGSLoadFormBuffer* a_buf) override;                      // 08/09
+#endif
 
 		// override (PlayerInputHandler)
 		bool CanProcess(InputEvent* a_event) override;  // 01
 #ifdef EXCLUSIVE_SKYRIM_VR
-		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_movementData) override;  // 04
+		void ProcessButton(ButtonEvent* a_event, PlayerControlsData* a_movementData) override;  // 06
 #endif
 
 #if defined(HAS_SKYRIM_MULTI_TARGETING) && defined(ENABLE_SKYRIM_SE) && defined(ENABLE_SKYRIM_AE)
@@ -131,5 +133,5 @@ namespace RE
 		std::uint64_t unk90;                // 90
 #endif
 	};
-	STATIC_ASSERT_SIZE(FirstPersonState, 0x90, 0x98, 0xA8);
+	STATIC_ASSERT_SIZE(FirstPersonState, 0x90, 0x98, 0x90);
 }

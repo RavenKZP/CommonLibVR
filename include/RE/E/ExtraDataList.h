@@ -40,6 +40,8 @@ namespace RE
 
 		[[nodiscard]] const PresenceBitfield*& GetPresence() const noexcept;
 
+		// Cross-runtime builds take the virtual-dtor branch below: members sit 8 bytes higher
+		// than on SE/VR, with the same total size.
 #if defined(EXCLUSIVE_SKYRIM_SE) || defined(EXCLUSIVE_SKYRIM_VR)
 		~BaseExtraList();  // 00
 

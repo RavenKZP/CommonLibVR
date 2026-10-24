@@ -29,7 +29,9 @@ namespace RE
 #else
 		void Unk_03();  // 03 - Multi-runtime
 #endif
+#ifndef SKYRIM_CROSS_VR
 		void Update(BSTSmartPointer<TESCameraState>& a_nextState) override;  // 03/04
+#endif
 
 		// members
 		NiMatrix3             rotationMtx;        // 0E8
@@ -44,5 +46,5 @@ namespace RE
 		std::uint8_t          pad135;             // 135
 		std::uint16_t         pad136;             // 136
 	};
-	STATIC_ASSERT_SIZE(BleedoutCameraState, 0x138, 0x138, 0x150);
+	STATIC_ASSERT_SIZE(BleedoutCameraState, 0x138);
 }

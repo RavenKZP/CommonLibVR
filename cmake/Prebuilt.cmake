@@ -23,14 +23,42 @@ function(_commonlib_prebuilt_complete dir out_var)
     endif()
 endfunction()
 
+# Which compiler family a bundle was built with, and which one this consumer is using. clang-cl
+# is its own family: its objects and MSVC's are not interchangeable even though both link
+# against the MSVC STL.
+function(_commonlib_toolchain_id out_var)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(${out_var} "msvc" PARENT_SCOPE)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        set(${out_var} "clangcl" PARENT_SCOPE)
+    else()
+        set(${out_var} "other" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # A CRT/config match doesn't guarantee the bundle links: MSVC STL internal dispatch helpers
 # (e.g. __std_replace_copy_2) aren't part of the stable ABI, so a toolset mismatch in either
 # direction can LNK2001 at final link. Requires matching major.minor against TOOLSET_VERSION.txt
-# (a bundle/compiler predating this stamp is treated as compatible); CMAKE_CXX_COMPILER_ID, not
-# MSVC, since MSVC is also TRUE for clang-cl, whose version isn't the cl.exe one being compared.
+# (a bundle/compiler predating this stamp is treated as compatible). The stamp is the version of the
+# bundle's own compiler: cl.exe for an msvc bundle, clang for a clangcl one, so each family only
+# ever compares against its own version scheme.
 function(_commonlib_prebuilt_toolset_compatible dir out_var)
     set(${out_var} TRUE PARENT_SCOPE)
-    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR NOT CMAKE_CXX_COMPILER_VERSION)
+    _commonlib_toolchain_id(_consumer_id)
+    set(_bundle_id "msvc")  # bundles predating TOOLCHAIN_ID.txt were all MSVC-built
+    if(EXISTS "${dir}/TOOLCHAIN_ID.txt")
+        file(READ "${dir}/TOOLCHAIN_ID.txt" _bundle_id)
+        string(STRIP "${_bundle_id}" _bundle_id)
+    endif()
+    if(NOT _consumer_id STREQUAL _bundle_id)
+        set(${out_var} FALSE PARENT_SCOPE)
+        message(STATUS "CommonLibSSE prebuilt bundle was built by ${_bundle_id} but this build uses "
+                        "${_consumer_id} - building from source: objects from different compilers "
+                        "disagree on the return convention of inline STL functions "
+                        "(e.g. std::strong_ordering), which corrupts memory at runtime.")
+        return()
+    endif()
+    if(NOT CMAKE_CXX_COMPILER_VERSION)
         return()
     endif()
     set(_stamp "${dir}/TOOLSET_VERSION.txt")
@@ -48,7 +76,7 @@ function(_commonlib_prebuilt_toolset_compatible dir out_var)
     set(_consumer_majmin "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
     if(NOT _consumer_majmin STREQUAL _producer_majmin)
         set(${out_var} FALSE PARENT_SCOPE)
-        message(STATUS "CommonLibSSE prebuilt bundle was built with a different MSVC toolset "
+        message(STATUS "CommonLibSSE prebuilt bundle was built with a different ${_bundle_id} toolset "
                         "(${_producer_version}) than this one (${CMAKE_CXX_COMPILER_VERSION}) "
                         "- building from source instead of risking an unresolved-STL-symbol link.")
     endif()
@@ -143,8 +171,14 @@ function(commonlib_resolve_prebuilt out_dir)
         return()
     endif()
 
+    # Bundles are published for MSVC and clang-cl only; any other compiler builds from source.
+    _commonlib_toolchain_id(_toolchain)
+    if(_toolchain STREQUAL "other")
+        return()
+    endif()
+
     set(_base "https://github.com/alandtse/CommonLibSSE-NG/releases/download/${_tag}")
-    set(_asset "commonlibsse-ng-prebuilt-${_tag}-all-msvc-cmake.zip")
+    set(_asset "commonlibsse-ng-prebuilt-${_tag}-all-${_toolchain}-cmake.zip")
     set(_zip "${_cache}.zip")
     file(DOWNLOAD "${_base}/${_asset}.sha256" "${_cache}.sha256" STATUS _s1)
     list(GET _s1 0 _s1code)

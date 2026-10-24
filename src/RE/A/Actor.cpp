@@ -228,6 +228,13 @@ namespace RE
 		return func(this, a_wornItemEnchantments, a_baseSpells, a_raceSpells, a_everyActorAbility);
 	}
 
+	void Actor::ChangeHeadPart(BGSHeadPart* a_oldPart, BGSHeadPart* a_newPart)
+	{
+		using func_t = decltype(&Actor::ChangeHeadPart);
+		static REL::Relocation<func_t> func{ REL::RelocationID(26468, 27063) };
+		return func(this, a_oldPart, a_newPart);
+	}
+
 	void Actor::ClearArrested()
 	{
 		auto* _currentProcess = GetActorRuntimeData().currentProcess;
@@ -1074,13 +1081,6 @@ namespace RE
 		return func(this);
 	}
 
-	bool Actor::IsLeveled() const
-	{
-		using func_t = decltype(&Actor::IsLeveled);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(19824, 20229) };
-		return func(this);
-	}
-
 	bool Actor::IsLimbGone(std::uint32_t a_limb)
 	{
 		using func_t = decltype(&Actor::IsLimbGone);
@@ -1225,7 +1225,7 @@ namespace RE
 	void Actor::RefreshEquippedActorValueCharge(const RE::TESForm* a_object, const RE::ExtraDataList* a_extraList, bool a_isLeft)
 	{
 		using func_t = decltype(&Actor::RefreshEquippedActorValueCharge);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(38752, 37803) };
+		static REL::Relocation<func_t> func{ RELOCATION_ID(37803, 38752) };
 		return func(this, a_object, a_extraList, a_isLeft);
 	}
 
@@ -1708,7 +1708,7 @@ namespace RE
 
 	TESAmmo* Actor::GetCurrentAmmo() const
 	{
-		return RelocateVirtual<decltype(&Actor::GetCurrentAmmo)>(0x9F, 0xA0, this);
+		return RelocateVirtual<decltype(&Actor::GetCurrentAmmo)>(0x9E, 0x9F, this);
 	}
 
 	void Actor::UnequipItem(std::uint64_t a_arg1, TESBoundObject* a_object)
@@ -1733,7 +1733,7 @@ namespace RE
 
 	void Actor::SetAvoidanceDisabled(bool a_set)
 	{
-		RelocateVirtual<decltype(&Actor::SetAvoidanceDisabled)>(0x0A5, 0x0A6, this, a_set);
+		RelocateVirtual<decltype(&Actor::SetAvoidanceDisabled)>(0x0A5, 0x0A7, this, a_set);
 	}
 
 	void Actor::DrawWeaponMagicHands(bool a_draw)

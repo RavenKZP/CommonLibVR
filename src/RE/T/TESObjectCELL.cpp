@@ -63,10 +63,10 @@ namespace RE
 		return owner && owner->Is(FormType::Faction) ? static_cast<TESFaction*>(owner) : nullptr;
 	}
 
-	TESObjectLAND* TESObjectCELL::GetLandscape()
+	TESObjectLAND* TESObjectCELL::GetLandscape() const
 	{
-		using func_t = decltype(&TESObjectCELL::GetLandscape);
-		static REL::Relocation<func_t> func{ RELOCATION_ID(18511, 18970) };
+		using func_t = decltype(&TESObjectCELL::GetLand);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(18513, 18970) };
 		return func(this);
 	}
 

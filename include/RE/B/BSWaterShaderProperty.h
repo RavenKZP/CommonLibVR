@@ -13,14 +13,24 @@ namespace RE
 		inline static constexpr auto Ni_RTTI = NiRTTI_BSWaterShaderProperty;
 		inline static constexpr auto VTABLE = VTABLE_BSWaterShaderProperty;
 
+		// Bits 0-13 are authored in the NIF and match niftools nif.xml WaterShaderPropertyFlags (BSWSP_*);
+		// bits 14-16 are engine-only. GetRenderPasses tests these masks on SE, VR and AE.
 		enum class WaterFlag
 		{
 			kNone = 0,
-			kUnderwater = 1 << 5,
-			kUseReflections = 1 << 6,
-			kUseCubemapReflections = 1 << 14,
-			kEnableFlowmap = 1 << 15,
-			kBlendNormals = 1 << 16
+			kDisplacement = 1 << 0,            // set by the displacement geometry clone; selects the WADING define (0x40)
+			kLODWater = 1 << 1,                // set on LOD water properties; selects the simple (extra 9) technique
+			kDepth = 1 << 2,                   // set on the water geometry property by AddWater; descriptor 0x10
+			kUnderwater = 1 << 5,              // selects the underwater (extra 8) technique; GetRenderPasses mirrors the underwater global into it
+			kUseReflections = 1 << 6,          // descriptor 0x4
+			kRefractions = 1 << 7,             // AddWater copies it to the water geometry property; descriptor 0x8
+			kVertexUV = 1 << 8,                // descriptor 0x1; BSWaterShader::SetupGeometry uploads 1.0 for it
+			kVertexAlphaDepth = 1 << 9,        // descriptors 0x1 and 0x80
+			kUnk10 = 1 << 10,                  // read from the NIF; with bAutoWaterSilhouetteReflections, AddWater makes the TESWaterReflections clear colour fog-based (nif.xml: PROCEDURAL)
+			kUnk11 = 1 << 11,                  // read from the NIF; AddWater tests it but only to set TESWaterReflections flags nothing reads (nif.xml: FOG)
+			kUseCubemapReflections = 1 << 14,  // descriptor 0x100; nif.xml places CUBEMAP at bit 13
+			kEnableFlowmap = 1 << 15,          // descriptor 0x200; SetupGeometry uploads flowmap constants
+			kBlendNormals = 1 << 16            // descriptor 0x400, only with the flowmap
 		};
 
 		~BSWaterShaderProperty() override;  // 00

@@ -363,39 +363,52 @@ namespace RE
 		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL bool     IsDead(bool a_notEssential = true) const;                                             // SE/AE 0x99, VR 0x9A
 		SKYRIM_REL_VR_VIRTUAL bool                   ProcessInWater(hkpCollidable* a_collidable, float a_waterHeight, float a_deltaTime);  // SE/AE 0x9C, VR 0x9D
 		SKYRIM_REL_VR_VIRTUAL bool                   ApplyCurrent(float a_velocityTime, const hkVector4& a_velocity);                      // SE/AE 0x9D, VR 0x9E
-		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL TESAmmo* GetCurrentAmmo() const;                                                               // SE/AE 0x9F, VR 0xA0
+		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL TESAmmo* GetCurrentAmmo() const;                                                               // SE/AE 0x9E, VR 0x9F
 		SKYRIM_REL_VR_VIRTUAL void                   UnequipItem(std::uint64_t a_arg1, TESBoundObject* a_object);                          // SE/AE 0xA1, VR 0xA2
 
 		// override (MagicTarget)
-#ifndef ENABLE_SKYRIM_VR
-		[[nodiscard]] Actor*                       GetTargetStatsObject() override;      // 002 - { return this; }
-		[[nodiscard]] bool                         MagicTargetIsActor() const override;  // 003 - { return true; }
-		[[nodiscard]] BSSimpleList<ActiveEffect*>* GetActiveEffectList() override;       // 007
+		[[nodiscard]] Actor* GetTargetStatsObject() override;      // 002 - { return this; }
+		[[nodiscard]] bool   MagicTargetIsActor() const override;  // 003 - { return true; }
+#if defined(EXCLUSIVE_SKYRIM_FLAT)
+		[[nodiscard]] BSSimpleList<ActiveEffect*>* GetActiveEffectList() override;  // 007
+#else
+		void* GetActiveEffectListNative() override;  // 007
 #endif
 
 		// add
-		SKYRIM_REL_VR_VIRTUAL void                Unk_A2(void);                                                                                                                                                                           // 0A2
-		SKYRIM_REL_VR_VIRTUAL void                PlayPickUpSound(TESBoundObject* a_object, bool a_pickup, bool a_use);                                                                                                                   // 0A3
-		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL float GetHeading(bool a_ignoreRaceSettings) const;                                                                                                                                            // 0A4
-		SKYRIM_REL_VR_VIRTUAL void                SetAvoidanceDisabled(bool a_set);                                                                                                                                                       // 0A5 - { return; }
-		SKYRIM_REL_VR_VIRTUAL void                DrawWeaponMagicHands(bool a_draw);                                                                                                                                                      // 0A6
-		SKYRIM_REL_VR_VIRTUAL void                DetachCharController();                                                                                                                                                                 // 0A7
-		SKYRIM_REL_VR_VIRTUAL void                RemoveCharController();                                                                                                                                                                 // 0A8
-		SKYRIM_REL_VR_VIRTUAL void                SetPosition(const NiPoint3& a_pos, bool a_updateCharController);                                                                                                                        // 0A9
-		SKYRIM_REL_VR_VIRTUAL void                KillDying();                                                                                                                                                                            // 0AA
-		SKYRIM_REL_VR_VIRTUAL void                Resurrect(bool a_resetInventory, bool a_attach3D);                                                                                                                                      // 0AB
-		SKYRIM_REL_VR_VIRTUAL bool                PutActorOnMountQuick();                                                                                                                                                                 // 0AC
-		SKYRIM_REL_VR_VIRTUAL void                Update(float a_delta);                                                                                                                                                                  // 0AD
-		SKYRIM_REL_VR_VIRTUAL void                UpdateNoAI(float a_delta);                                                                                                                                                              // 0AE - { return UpdateActor3DPosition(); }
-		SKYRIM_REL_VR_VIRTUAL void                UpdateCharacterControllerSimulationSettings(bhkCharacterController& a_controller);                                                                                                      // 0AF
-		SKYRIM_REL_VR_VIRTUAL void                PotentiallyFixRagdollState();                                                                                                                                                           // 0B0
-		SKYRIM_REL_VR_VIRTUAL void                UpdateNonRenderSafe(float a_delta);                                                                                                                                                     // 0B1
-		SKYRIM_REL_VR_VIRTUAL void                OnItemEquipped(bool a_playAnim);                                                                                                                                                        // 0B2
-		SKYRIM_REL_VR_VIRTUAL void                Unk_B3(void);                                                                                                                                                                           // 0B3 - { return 1; }
-		SKYRIM_REL_VR_VIRTUAL void                Unk_B4(void);                                                                                                                                                                           // 0B4
-		SKYRIM_REL_VR_VIRTUAL void                SetCrimeGoldValue(TESFaction* a_faction, bool a_violent, std::uint32_t a_amount);                                                                                                       // 0B5
-		SKYRIM_REL_VR_VIRTUAL void                ModCrimeGoldValue(TESFaction* a_faction, bool a_violent, std::int32_t a_amount);                                                                                                        // 0B6
-		SKYRIM_REL_VR_VIRTUAL void                RemoveCrimeGoldValue(TESFaction* a_faction, bool a_violent, std::int32_t a_amount);                                                                                                     // 0B7
+		SKYRIM_REL_VR_VIRTUAL void                Unk_A2(void);                                                          // 0A2
+		SKYRIM_REL_VR_VIRTUAL void                PlayPickUpSound(TESBoundObject* a_object, bool a_pickup, bool a_use);  // 0A3
+		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL float GetHeading(bool a_ignoreRaceSettings) const;                           // 0A4
+#if defined(EXCLUSIVE_SKYRIM_VR)
+		virtual void ModifyRotationZ(float a_delta);  // 0A6 - VR only
+#elif defined(SKYRIM_CROSS_VR)
+		// Virtual on VR only (real slot 0xA6); a no-op elsewhere.
+		void ModifyRotationZ(float a_delta)
+		{
+			if (REL::Module::IsVR()) {
+				REL::RelocateVirtual<decltype(&Actor::ModifyRotationZ)>(0, 0xA6, this, a_delta);
+			}
+		}
+#endif
+		SKYRIM_REL_VR_VIRTUAL void          SetAvoidanceDisabled(bool a_set);                                                                                                                                                             // 0A5 - { return; }
+		SKYRIM_REL_VR_VIRTUAL void          DrawWeaponMagicHands(bool a_draw);                                                                                                                                                            // 0A6
+		SKYRIM_REL_VR_VIRTUAL void          DetachCharController();                                                                                                                                                                       // 0A7
+		SKYRIM_REL_VR_VIRTUAL void          RemoveCharController();                                                                                                                                                                       // 0A8
+		SKYRIM_REL_VR_VIRTUAL void          SetPosition(const NiPoint3& a_pos, bool a_updateCharController);                                                                                                                              // 0A9
+		SKYRIM_REL_VR_VIRTUAL void          KillDying();                                                                                                                                                                                  // 0AA
+		SKYRIM_REL_VR_VIRTUAL void          Resurrect(bool a_resetInventory, bool a_attach3D);                                                                                                                                            // 0AB
+		SKYRIM_REL_VR_VIRTUAL bool          PutActorOnMountQuick();                                                                                                                                                                       // 0AC
+		SKYRIM_REL_VR_VIRTUAL void          Update(float a_delta);                                                                                                                                                                        // 0AD
+		SKYRIM_REL_VR_VIRTUAL void          UpdateNoAI(float a_delta);                                                                                                                                                                    // 0AE - { return UpdateActor3DPosition(); }
+		SKYRIM_REL_VR_VIRTUAL void          UpdateCharacterControllerSimulationSettings(bhkCharacterController& a_controller);                                                                                                            // 0AF
+		SKYRIM_REL_VR_VIRTUAL void          PotentiallyFixRagdollState();                                                                                                                                                                 // 0B0
+		SKYRIM_REL_VR_VIRTUAL void          UpdateNonRenderSafe(float a_delta);                                                                                                                                                           // 0B1
+		SKYRIM_REL_VR_VIRTUAL void          OnItemEquipped(bool a_playAnim);                                                                                                                                                              // 0B2
+		SKYRIM_REL_VR_VIRTUAL void          Unk_B3(void);                                                                                                                                                                                 // 0B3 - { return 1; }
+		SKYRIM_REL_VR_VIRTUAL void          Unk_B4(void);                                                                                                                                                                                 // 0B4
+		SKYRIM_REL_VR_VIRTUAL void          SetCrimeGoldValue(TESFaction* a_faction, bool a_violent, std::uint32_t a_amount);                                                                                                             // 0B5
+		SKYRIM_REL_VR_VIRTUAL void          ModCrimeGoldValue(TESFaction* a_faction, bool a_violent, std::int32_t a_amount);                                                                                                              // 0B6
+		SKYRIM_REL_VR_VIRTUAL void          RemoveCrimeGoldValue(TESFaction* a_faction, bool a_violent, std::int32_t a_amount);                                                                                                           // 0B7
 		[[nodiscard]] SKYRIM_REL_VR_VIRTUAL std::uint32_t GetCrimeGoldValue(const TESFaction* a_faction) const;                                                                                                                           // 0B8
 		SKYRIM_REL_VR_VIRTUAL void                        GoToPrison(TESFaction* a_faction, bool a_removeInventory, bool a_realJail);                                                                                                     // 0B9 - { return; }
 		SKYRIM_REL_VR_VIRTUAL void                        ServePrisonTime();                                                                                                                                                              // 0BA - { return; }
@@ -534,156 +547,157 @@ namespace RE
 		[[nodiscard]] bool               CanOfferServices() const;
 		[[nodiscard]] bool               CanPickpocket() const;
 		// On false, shows the matching vanilla HUD message itself; a_bed selects "sleep" wording + bed-ownership checks, nullptr for plain "wait".
-		[[nodiscard]] bool                      CanSleepWait(TESObjectREFR* a_bed = nullptr) const;
-		[[nodiscard]] bool                      CanTalkToPlayer() const;
-		[[nodiscard]] bool                      CanUseIdle(TESIdleForm* a_idle) const;
-		void                                    ClearArrested();
-		void                                    ClearDeathState();
-		void                                    ClearExpressionOverride();
-		inline void                             ClearExtraArrows() { RemoveExtraArrows3D(); }
-		[[nodiscard]] ActorHandle               CreateRefHandle();
-		bool                                    Decapitate();
-		void                                    DeselectSpell(SpellItem* a_spell);
-		void                                    DispelAlteredStates(RE::EffectArchetype a_exception);
-		void                                    DispelWornItemEnchantments();
-		void                                    DoReset3D(bool a_updateWeight);
-		bool                                    DoDamage(float a_healthDamage, Actor* a_source, bool a_dontAdjustDifficulty);
-		void                                    EnableAI(bool a_enable);
-		void                                    EndInterruptPackage(bool a_skipDialogue);
-		void                                    EvaluatePackage(bool a_immediate = false, bool a_resetAI = false);
-		[[nodiscard]] bool                      FightsInWater() const;
-		[[nodiscard]] TESNPC*                   GetActorBase();
-		[[nodiscard]] const TESNPC*             GetActorBase() const;
-		[[nodiscard]] float                     GetActorValueMax(ActorValue a_value) const;
-		[[nodiscard]] float                     GetActorValueModifier(ACTOR_VALUE_MODIFIER a_modifier, ActorValue a_value) const;
-		[[nodiscard]] float                     GetAimAngle() const;
-		[[nodiscard]] float                     GetAimHeading() const;
-		[[nodiscard]] float                     GetAttackChance(Actor* a_targ, RE::BGSAttackData* a_atkData) const;
-		float                                   GetAttackReach() const;
-		[[nodiscard]] InventoryEntryData*       GetAttackingWeapon();
-		[[nodiscard]] const InventoryEntryData* GetAttackingWeapon() const;
-		float                                   GetBoundRadius() const;
-		[[nodiscard]] bhkCharacterController*   GetCharController() const;
-		void                                    GetCollisionFilterInfo(CFilter& a_outCollisionFilterInfo);
-		[[nodiscard]] NiPointer<Actor>          GetCommandingActor() const;
-		bool                                    GetControllingActor(NiPointer<Actor>& a_out);
-		[[nodiscard]] TESFaction*               GetCrimeFaction();
-		[[nodiscard]] const TESFaction*         GetCrimeFaction() const;
-		[[nodiscard]] TESPackage*               GetCurrentPackage();
-		[[nodiscard]] const TESPackage*         GetCurrentPackage() const;
-		[[nodiscard]] TESShout*                 GetCurrentShout();
-		[[nodiscard]] const TESShout*           GetCurrentShout() const;
-		[[nodiscard]] InventoryEntryData*       GetEquippedEntryData(bool a_leftHand) const;
-		[[nodiscard]] TESForm*                  GetEquippedObject(bool a_leftHand) const;
-		[[nodiscard]] TESForm*                  GetEquippedObjectInSlot(const BGSEquipSlot* slot) const;
-		[[nodiscard]] float                     GetEquippedWeight();
-		[[nodiscard]] std::int32_t              GetFactionRank(TESFaction* a_faction, bool a_isPlayer);
-		[[nodiscard]] FIGHT_REACTION            GetFactionReaction(Actor* a_other) const;
-		[[nodiscard]] std::int32_t              GetGoldAmount(bool a_noInit = false);
-		[[nodiscard]] ActorHandle               GetHandle();
-		[[nodiscard]] NiAVObject*               GetHeadPartObject(BGSHeadPart::HeadPartType a_type);
-		[[nodiscard]] float                     GetHeight();
-		[[nodiscard]] HighProcessData*          GetHighProcess() const;
-		[[nodiscard]] Actor*                    GetKiller() const;
-		[[nodiscard]] std::uint16_t             GetLevel() const;
-		[[nodiscard]] MiddleHighProcessData*    GetMiddleHighProcess() const;
-		[[nodiscard]] bool                      GetMount(NiPointer<Actor>& a_outMount);
-		[[nodiscard]] bool                      GetMountedBy(NiPointer<Actor>& a_outRider);
-		[[nodiscard]] double                    GetMoveDirectionRelativeToFacing();
-		[[nodiscard]] ObjectRefHandle           GetOccupiedFurniture() const;
-		[[nodiscard]] bool                      GetPlayerControls() const;
-		[[nodiscard]] PROCESS_TYPE              GetProcessLevel() const;
-		[[nodiscard]] TESRace*                  GetRace() const;
-		[[nodiscard]] float                     GetReach() const;
-		[[nodiscard]] float                     GetRegenDelay(ActorValue a_actorValue) const;
-		[[nodiscard]] float                     GetSubmergedLevel(float a_zPos, RE::TESObjectCELL* a_cell);
-		[[nodiscard]] TESObjectARMO*            GetSkin() const;
-		[[nodiscard]] TESObjectARMO*            GetSkin(BGSBipedObjectForm::BipedObjectSlot a_slot, bool a_noInit = false);
-		[[nodiscard]] SOUL_LEVEL                GetSoulSize() const;
-		[[nodiscard]] TESNPC*                   GetTemplateBase();
-		[[nodiscard]] float                     GetTotalCarryWeight();
-		[[nodiscard]] float                     GetTrackedDamage() const;
-		[[nodiscard]] TESFaction*               GetVendorFaction();
-		[[nodiscard]] const TESFaction*         GetVendorFaction() const;
-		[[nodiscard]] float                     GetVoiceRecoveryTime();
-		[[nodiscard]] float                     GetWarmthRating() const;
-		[[nodiscard]] TESObjectARMO*            GetWornArmor(BGSBipedObjectForm::BipedObjectSlot a_slot, bool a_noInit = false);
-		[[nodiscard]] TESObjectARMO*            GetWornArmor(FormID a_formID, bool a_noInit = false);
-		[[nodiscard]] bool                      HasKeyword(const BGSKeyword* a_keyword) const;
-		[[nodiscard]] bool                      HasKeywordString(std::string_view a_formEditorID);
-		[[nodiscard]] bool                      HasLineOfSight(TESObjectREFR* a_ref, bool& a_arg2);
-		[[nodiscard]] bool                      HasMagicEffectWithKeyword(RE::BGSKeyword* a_kywd);
-		[[nodiscard]] bool                      HasOutfitItems(BGSOutfit* a_outfit);
-		[[nodiscard]] bool                      HasPerk(BGSPerk* a_perk) const;
-		[[nodiscard]] bool                      HasShout(TESShout* a_shout) const;
-		[[nodiscard]] bool                      HasSpell(SpellItem* a_spell) const;
-		void                                    InitiateDoNothingPackage();
-		void                                    InterruptCast(bool a_restoreMagicka) const;
-		[[nodiscard]] bool                      IsAttacking() const;
-		[[nodiscard]] bool                      IsAIEnabled() const;
-		[[nodiscard]] bool                      IsAlarmed() const;
-		[[nodiscard]] bool                      IsAMount() const;
-		[[nodiscard]] bool                      IsAngryWithPlayer() const { return GetActorRuntimeData().boolFlags.all(BOOL_FLAGS::kAngryWithPlayer); };
-		[[nodiscard]] bool                      IsAnimationDriven() const;
-		[[nodiscard]] bool                      IsAllowRotation() const;
-		[[nodiscard]] bool                      IsBeingRidden() const;
-		[[nodiscard]] bool                      IsBlocking() const;
-		[[nodiscard]] bool                      IsCasting(MagicItem* a_spell) const;
-		[[nodiscard]] bool                      IsCombatTarget(Actor* a_other) const;
-		[[nodiscard]] bool                      IsCommandedActor() const;
-		[[nodiscard]] bool                      IsCurrentShout(SpellItem* a_power);
-		[[nodiscard]] bool                      IsDoingFavor() const;
-		[[nodiscard]] bool                      IsDualCasting() const;
-		[[nodiscard]] bool                      IsEssential() const;
-		[[nodiscard]] bool                      IsEssentialDown() const;
-		[[nodiscard]] bool                      IsFactionInCrimeGroup(const TESFaction* a_faction) const;
-		[[nodiscard]] bool                      IsGhost() const;
-		[[nodiscard]] bool                      IsGuard() const;
-		[[nodiscard]] bool                      IsHostileToActor(Actor* a_actor);
-		[[nodiscard]] bool                      IsInBleedout() const;
-		[[nodiscard]] bool                      IsInCastPowerList(SpellItem* a_power);
-		[[nodiscard]] bool                      IsInJumpState() const;
-		[[nodiscard]] constexpr bool            IsInKillMove() const noexcept { return GetActorRuntimeData().boolFlags.all(BOOL_FLAGS::kIsInKillMove); }
-		[[nodiscard]] bool                      IsInMidair() const;
-		[[nodiscard]] bool                      IsInRagdollState() const;
-		[[nodiscard]] bool                      IsLeveled() const;
-		[[nodiscard]] bool                      IsLimbGone(std::uint32_t a_limb);
-		[[nodiscard]] bool                      IsMovementAnimationDriven() const;
-		[[nodiscard]] bool                      IsMoving() const;
-		[[nodiscard]] bool                      IsOnMount() const;
-		[[nodiscard]] bool                      IsOnWaterTriangle() const;
-		[[nodiscard]] bool                      IsOverEncumbered() const;
-		[[nodiscard]] bool                      IsPathing() const;
-		[[nodiscard]] bool                      IsPlayerTeammate() const;
-		[[nodiscard]] bool                      IsPowerAttacking() const;
-		[[nodiscard]] bool                      IsProtected() const;
-		[[nodiscard]] bool                      IsRotationAllowed() const;
-		[[nodiscard]] bool                      IsRunning() const;
-		[[nodiscard]] bool                      IsSneaking() const;
-		[[nodiscard]] bool                      IsStaggering() const;
-		[[nodiscard]] bool                      IsSummoned() const noexcept;
-		[[nodiscard]] bool                      IsSummonedByPlayer() const noexcept;
-		[[nodiscard]] bool                      IsTrespassing() const;
-		void                                    KillImmediate();
-		[[nodiscard]] constexpr bool            NotShowOnStealthMeter() const noexcept { return GetActorRuntimeData().boolFlags.any(BOOL_FLAGS::kDoNotShowOnStealthMeter); }
-		void                                    PlayASound(BSSoundHandle& a_result, FormID a_formID, bool a_unk03, std::uint32_t a_flags);
-		void                                    ProcessVATSAttack(MagicCaster* a_caster, bool a_hasTargetAnim, TESObjectREFR* a_target, bool a_leftHand);
-		void                                    RemoveAnimationGraphEventSink(BSTEventSink<BSAnimationGraphEvent>* a_sink) const;
-		void                                    RemoveCastScroll(SpellItem* a_spell, MagicSystem::CastingSource a_source);
-		void                                    RefreshEquippedActorValueCharge(const RE::TESForm* a_object, const RE::ExtraDataList* a_extraList, bool a_isLeft);
-		void                                    RemoveExtraArrows3D();
-		void                                    RemoveFromFaction(TESFaction* a_faction);
-		void                                    RemoveOutfitItems(BGSOutfit* a_outfit);
-		bool                                    RemoveSpell(SpellItem* a_spell);
-		[[nodiscard]] std::int32_t              RequestDetectionLevel(Actor* a_target, DETECTION_PRIORITY a_priority = DETECTION_PRIORITY::kNormal);
-		[[nodiscard]] std::int32_t              RequestLOS(Actor* a_target, float a_viewCone = 2.f * std::numbers::pi);
-		bool                                    SetDefaultOutfit(BGSOutfit* a_outfit, bool a_update3D);
-		void                                    SetHeading(float a_angle);  // SetRotationZ
-		void                                    SetLifeState(ACTOR_LIFE_STATE a_lifeState);
-		void                                    SetPlayerControls(bool a_enable);
-		void                                    SetLooking(float a_angle);  // SetRotationX
-		bool                                    SetSleepOutfit(BGSOutfit* a_outfit, bool a_update3D);
-		bool                                    StartCombat(Actor* a_target, CombatGroup* a_combatGroup = nullptr);
+		[[nodiscard]] bool                                                        CanSleepWait(TESObjectREFR* a_bed = nullptr) const;
+		[[nodiscard]] bool                                                        CanTalkToPlayer() const;
+		[[nodiscard]] bool                                                        CanUseIdle(TESIdleForm* a_idle) const;
+		void                                                                      ChangeHeadPart(BGSHeadPart* a_oldPart, BGSHeadPart* a_newPart);
+		void                                                                      ClearArrested();
+		void                                                                      ClearDeathState();
+		void                                                                      ClearExpressionOverride();
+		inline void                                                               ClearExtraArrows() { RemoveExtraArrows3D(); }
+		[[nodiscard]] ActorHandle                                                 CreateRefHandle();
+		bool                                                                      Decapitate();
+		void                                                                      DeselectSpell(SpellItem* a_spell);
+		void                                                                      DispelAlteredStates(RE::EffectArchetype a_exception);
+		void                                                                      DispelWornItemEnchantments();
+		void                                                                      DoReset3D(bool a_updateWeight);
+		bool                                                                      DoDamage(float a_healthDamage, Actor* a_source, bool a_dontAdjustDifficulty);
+		void                                                                      EnableAI(bool a_enable);
+		void                                                                      EndInterruptPackage(bool a_skipDialogue);
+		void                                                                      EvaluatePackage(bool a_immediate = false, bool a_resetAI = false);
+		[[nodiscard]] bool                                                        FightsInWater() const;
+		[[nodiscard]] TESNPC*                                                     GetActorBase();
+		[[nodiscard]] const TESNPC*                                               GetActorBase() const;
+		[[nodiscard]] float                                                       GetActorValueMax(ActorValue a_value) const;
+		[[nodiscard]] float                                                       GetActorValueModifier(ACTOR_VALUE_MODIFIER a_modifier, ActorValue a_value) const;
+		[[nodiscard]] float                                                       GetAimAngle() const;
+		[[nodiscard]] float                                                       GetAimHeading() const;
+		[[nodiscard]] float                                                       GetAttackChance(Actor* a_targ, RE::BGSAttackData* a_atkData) const;
+		float                                                                     GetAttackReach() const;
+		[[nodiscard]] InventoryEntryData*                                         GetAttackingWeapon();
+		[[nodiscard]] const InventoryEntryData*                                   GetAttackingWeapon() const;
+		float                                                                     GetBoundRadius() const;
+		[[nodiscard]] bhkCharacterController*                                     GetCharController() const;
+		void                                                                      GetCollisionFilterInfo(CFilter& a_outCollisionFilterInfo);
+		[[nodiscard]] NiPointer<Actor>                                            GetCommandingActor() const;
+		bool                                                                      GetControllingActor(NiPointer<Actor>& a_out);
+		[[nodiscard]] TESFaction*                                                 GetCrimeFaction();
+		[[nodiscard]] const TESFaction*                                           GetCrimeFaction() const;
+		[[nodiscard]] TESPackage*                                                 GetCurrentPackage();
+		[[nodiscard]] const TESPackage*                                           GetCurrentPackage() const;
+		[[nodiscard]] TESShout*                                                   GetCurrentShout();
+		[[nodiscard]] const TESShout*                                             GetCurrentShout() const;
+		[[nodiscard]] InventoryEntryData*                                         GetEquippedEntryData(bool a_leftHand) const;
+		[[nodiscard]] TESForm*                                                    GetEquippedObject(bool a_leftHand) const;
+		[[nodiscard]] TESForm*                                                    GetEquippedObjectInSlot(const BGSEquipSlot* slot) const;
+		[[nodiscard]] float                                                       GetEquippedWeight();
+		[[nodiscard]] std::int32_t                                                GetFactionRank(TESFaction* a_faction, bool a_isPlayer);
+		[[nodiscard]] FIGHT_REACTION                                              GetFactionReaction(Actor* a_other) const;
+		[[nodiscard]] std::int32_t                                                GetGoldAmount(bool a_noInit = false);
+		[[nodiscard]] ActorHandle                                                 GetHandle();
+		[[nodiscard]] NiAVObject*                                                 GetHeadPartObject(BGSHeadPart::HeadPartType a_type);
+		[[nodiscard]] float                                                       GetHeight();
+		[[nodiscard]] HighProcessData*                                            GetHighProcess() const;
+		[[nodiscard]] Actor*                                                      GetKiller() const;
+		[[nodiscard]] std::uint16_t                                               GetLevel() const;
+		[[nodiscard]] MiddleHighProcessData*                                      GetMiddleHighProcess() const;
+		[[nodiscard]] bool                                                        GetMount(NiPointer<Actor>& a_outMount);
+		[[nodiscard]] bool                                                        GetMountedBy(NiPointer<Actor>& a_outRider);
+		[[nodiscard]] double                                                      GetMoveDirectionRelativeToFacing();
+		[[nodiscard]] ObjectRefHandle                                             GetOccupiedFurniture() const;
+		[[nodiscard]] bool                                                        GetPlayerControls() const;
+		[[nodiscard]] PROCESS_TYPE                                                GetProcessLevel() const;
+		[[nodiscard]] TESRace*                                                    GetRace() const;
+		[[nodiscard]] float                                                       GetReach() const;
+		[[nodiscard]] float                                                       GetRegenDelay(ActorValue a_actorValue) const;
+		[[nodiscard]] float                                                       GetSubmergedLevel(float a_zPos, RE::TESObjectCELL* a_cell);
+		[[nodiscard]] TESObjectARMO*                                              GetSkin() const;
+		[[nodiscard]] TESObjectARMO*                                              GetSkin(BGSBipedObjectForm::BipedObjectSlot a_slot, bool a_noInit = false);
+		[[nodiscard]] SOUL_LEVEL                                                  GetSoulSize() const;
+		[[nodiscard]] TESNPC*                                                     GetTemplateBase();
+		[[nodiscard]] float                                                       GetTotalCarryWeight();
+		[[nodiscard]] float                                                       GetTrackedDamage() const;
+		[[nodiscard]] TESFaction*                                                 GetVendorFaction();
+		[[nodiscard]] const TESFaction*                                           GetVendorFaction() const;
+		[[nodiscard]] float                                                       GetVoiceRecoveryTime();
+		[[nodiscard]] float                                                       GetWarmthRating() const;
+		[[nodiscard]] TESObjectARMO*                                              GetWornArmor(BGSBipedObjectForm::BipedObjectSlot a_slot, bool a_noInit = false);
+		[[nodiscard]] TESObjectARMO*                                              GetWornArmor(FormID a_formID, bool a_noInit = false);
+		[[nodiscard]] bool                                                        HasKeyword(const BGSKeyword* a_keyword) const;
+		[[nodiscard]] bool                                                        HasKeywordString(std::string_view a_formEditorID);
+		[[nodiscard]] bool                                                        HasLineOfSight(TESObjectREFR* a_ref, bool& a_arg2);
+		[[nodiscard]] bool                                                        HasMagicEffectWithKeyword(RE::BGSKeyword* a_kywd);
+		[[nodiscard]] bool                                                        HasOutfitItems(BGSOutfit* a_outfit);
+		[[nodiscard]] bool                                                        HasPerk(BGSPerk* a_perk) const;
+		[[nodiscard]] bool                                                        HasShout(TESShout* a_shout) const;
+		[[nodiscard]] bool                                                        HasSpell(SpellItem* a_spell) const;
+		void                                                                      InitiateDoNothingPackage();
+		void                                                                      InterruptCast(bool a_restoreMagicka) const;
+		[[nodiscard]] bool                                                        IsAttacking() const;
+		[[nodiscard]] bool                                                        IsAIEnabled() const;
+		[[nodiscard]] bool                                                        IsAlarmed() const;
+		[[nodiscard]] bool                                                        IsAMount() const;
+		[[nodiscard]] bool                                                        IsAngryWithPlayer() const { return GetActorRuntimeData().boolFlags.all(BOOL_FLAGS::kAngryWithPlayer); };
+		[[nodiscard]] bool                                                        IsAnimationDriven() const;
+		[[nodiscard]] bool                                                        IsAllowRotation() const;
+		[[nodiscard]] bool                                                        IsBeingRidden() const;
+		[[nodiscard]] bool                                                        IsBlocking() const;
+		[[nodiscard]] bool                                                        IsCasting(MagicItem* a_spell) const;
+		[[nodiscard]] bool                                                        IsCombatTarget(Actor* a_other) const;
+		[[nodiscard]] bool                                                        IsCommandedActor() const;
+		[[nodiscard]] bool                                                        IsCurrentShout(SpellItem* a_power);
+		[[nodiscard]] bool                                                        IsDoingFavor() const;
+		[[nodiscard]] bool                                                        IsDualCasting() const;
+		[[nodiscard]] bool                                                        IsEssential() const;
+		[[nodiscard]] bool                                                        IsEssentialDown() const;
+		[[nodiscard]] bool                                                        IsFactionInCrimeGroup(const TESFaction* a_faction) const;
+		[[nodiscard]] bool                                                        IsGhost() const;
+		[[nodiscard]] bool                                                        IsGuard() const;
+		[[nodiscard]] bool                                                        IsHostileToActor(Actor* a_actor);
+		[[nodiscard]] bool                                                        IsInBleedout() const;
+		[[nodiscard]] bool                                                        IsInCastPowerList(SpellItem* a_power);
+		[[nodiscard]] bool                                                        IsInJumpState() const;
+		[[nodiscard]] constexpr bool                                              IsInKillMove() const noexcept { return GetActorRuntimeData().boolFlags.all(BOOL_FLAGS::kIsInKillMove); }
+		[[nodiscard]] bool                                                        IsInMidair() const;
+		[[nodiscard]] bool                                                        IsInRagdollState() const;
+		[[deprecated("use TESObjectREFR::IsLeveledCreature")]] [[nodiscard]] bool IsLeveled() const { return IsLeveledCreature(); }
+		[[nodiscard]] bool                                                        IsLimbGone(std::uint32_t a_limb);
+		[[nodiscard]] bool                                                        IsMovementAnimationDriven() const;
+		[[nodiscard]] bool                                                        IsMoving() const;
+		[[nodiscard]] bool                                                        IsOnMount() const;
+		[[nodiscard]] bool                                                        IsOnWaterTriangle() const;
+		[[nodiscard]] bool                                                        IsOverEncumbered() const;
+		[[nodiscard]] bool                                                        IsPathing() const;
+		[[nodiscard]] bool                                                        IsPlayerTeammate() const;
+		[[nodiscard]] bool                                                        IsPowerAttacking() const;
+		[[nodiscard]] bool                                                        IsProtected() const;
+		[[nodiscard]] bool                                                        IsRotationAllowed() const;
+		[[nodiscard]] bool                                                        IsRunning() const;
+		[[nodiscard]] bool                                                        IsSneaking() const;
+		[[nodiscard]] bool                                                        IsStaggering() const;
+		[[nodiscard]] bool                                                        IsSummoned() const noexcept;
+		[[nodiscard]] bool                                                        IsSummonedByPlayer() const noexcept;
+		[[nodiscard]] bool                                                        IsTrespassing() const;
+		void                                                                      KillImmediate();
+		[[nodiscard]] constexpr bool                                              NotShowOnStealthMeter() const noexcept { return GetActorRuntimeData().boolFlags.any(BOOL_FLAGS::kDoNotShowOnStealthMeter); }
+		void                                                                      PlayASound(BSSoundHandle& a_result, FormID a_formID, bool a_unk03, std::uint32_t a_flags);
+		void                                                                      ProcessVATSAttack(MagicCaster* a_caster, bool a_hasTargetAnim, TESObjectREFR* a_target, bool a_leftHand);
+		void                                                                      RemoveAnimationGraphEventSink(BSTEventSink<BSAnimationGraphEvent>* a_sink) const;
+		void                                                                      RemoveCastScroll(SpellItem* a_spell, MagicSystem::CastingSource a_source);
+		void                                                                      RefreshEquippedActorValueCharge(const RE::TESForm* a_object, const RE::ExtraDataList* a_extraList, bool a_isLeft);
+		void                                                                      RemoveExtraArrows3D();
+		void                                                                      RemoveFromFaction(TESFaction* a_faction);
+		void                                                                      RemoveOutfitItems(BGSOutfit* a_outfit);
+		bool                                                                      RemoveSpell(SpellItem* a_spell);
+		[[nodiscard]] std::int32_t                                                RequestDetectionLevel(Actor* a_target, DETECTION_PRIORITY a_priority = DETECTION_PRIORITY::kNormal);
+		[[nodiscard]] std::int32_t                                                RequestLOS(Actor* a_target, float a_viewCone = 2.f * std::numbers::pi);
+		bool                                                                      SetDefaultOutfit(BGSOutfit* a_outfit, bool a_update3D);
+		void                                                                      SetHeading(float a_angle);  // SetRotationZ
+		void                                                                      SetLifeState(ACTOR_LIFE_STATE a_lifeState);
+		void                                                                      SetPlayerControls(bool a_enable);
+		void                                                                      SetLooking(float a_angle);  // SetRotationX
+		bool                                                                      SetSleepOutfit(BGSOutfit* a_outfit, bool a_update3D);
+		bool                                                                      StartCombat(Actor* a_target, CombatGroup* a_combatGroup = nullptr);
 		// Does not check whether resting is currently allowed -- callers must gate that themselves.
 		void                       StartSleeping(std::int32_t a_hours);
 		void                       StealAlarm(TESObjectREFR* a_ref, TESForm* a_object, std::int32_t a_num, std::int32_t a_total, TESForm* a_owner, bool a_allowWarning);
