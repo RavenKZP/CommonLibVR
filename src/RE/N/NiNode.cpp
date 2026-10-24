@@ -40,6 +40,13 @@ namespace RE
 		return SetAt1(a_idx, a_child, a_childOut);
 	}
 
+	std::uint32_t NiNode::AddDecal(const BGSDecalManager::AdditionData& additionData)
+	{
+		using func_t = decltype(&NiNode::AddDecal);
+		static REL::Relocation<func_t> func{ RELOCATION_ID(15060, 15234) };
+		return func(this, additionData);
+	}
+
 	NiNode* NiNode::Ctor(std::uint16_t a_arrBuffLen)
 	{
 		using func_t = decltype(&NiNode::Ctor);

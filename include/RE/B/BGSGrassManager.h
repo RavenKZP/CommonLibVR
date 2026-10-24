@@ -84,7 +84,7 @@ namespace RE
 		BSTArray<BSMultiStreamInstanceTriShape*>   grassShapes;             // 48
 		float                                      totalGrassRange;         // 60
 		std::uint32_t                              pad64;                   // 64
-		NiPointer<NiNode>                          grassNode;               // 68
+		NiPointer<BSMultiStreamInstanceTriShape>   grassNode;               // 68
 		std::uint32_t                              grassEvalSize;           // 70
 		std::uint32_t                              grassEvalSizeSquared;    // 74
 		std::uint32_t                              grassPatchSize;          // 78

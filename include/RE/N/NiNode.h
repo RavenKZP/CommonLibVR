@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RE/B/BGSDecalManager.h"
 #include "RE/N/NiAVObject.h"
 #include "RE/N/NiSmartPointer.h"
 #include "RE/N/NiTArray.h"
@@ -55,6 +56,8 @@ namespace RE
 		SKYRIM_REL_VR_VIRTUAL void UpdateUpwardPass(NiUpdateData& a_data);                                               // 3D
 
 		static NiNode* Create(std::uint16_t a_arrBufLen = 0);
+
+		std::uint32_t AddDecal(const BGSDecalManager::AdditionData& additionData);
 
 		RUNTIME_DATA_ACCESSOR_EX(NiTObjectArray<NiPointer<NiAVObject>>, GetChildren, 0x110, 0x138);
 
