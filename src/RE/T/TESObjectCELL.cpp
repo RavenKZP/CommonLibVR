@@ -65,7 +65,7 @@ namespace RE
 
 	TESObjectLAND* TESObjectCELL::GetLandscape() const
 	{
-		using func_t = decltype(&TESObjectCELL::GetLand);
+		using func_t = decltype(&TESObjectCELL::GetLandscape);
 		static REL::Relocation<func_t> func{ RELOCATION_ID(18513, 18970) };
 		return func(this);
 	}
