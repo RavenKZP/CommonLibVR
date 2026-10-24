@@ -1,3 +1,134 @@
+## [7.0.0](https://github.com/RavenKZP/CommonLibVR/compare/v6.0.0...v7.0.0) (2026-10-24)
+
+### ⚠ BREAKING CHANGES
+
+* **PlayerInputHandler:** PlayerInputHandler::ProcessMotionGesture and ProcessSixaxis take a PlayerControlsData* and return void. Callers must pass the data pointer; no caller exists in this repo or in the plugin sources checked.
+* **PlayerInputHandler:** PlayerInputHandler::Unk_05 and Unk_06 are removed; slots 5 and 6 are ProcessMouseMove and ProcessButton on VR. VR code that called ProcessThumbstick, ProcessMouseMove or ProcessButton through the old indices hit the wrong virtuals and must be rebuilt.
+* **bscullingprocess:** BSCullingProcess::AppendNonAccum and its BSGeometryListCullingProcess and BSParabolicCullingProcess overrides take BSGeometry& instead of NiAVObject&; overrides and callers must change the parameter type.
+* **spellslearned:** SpellsLearned::Event::spell and
+SpellsLearned::SendEvent(SpellItem*) are removed.
+* **gfx:** name GFxMovieRoot focus/mouse fields (#423)
+* **gfx:** realign GFxASCharacter virtuals (#422)
+* **magic:** MagicTarget::GetActiveEffectList is removed in VR-only builds
+(use VisitActiveEffects or GetVRActiveEffectList) and returns nullptr on VR in
+all-runtime builds; derived classes in builds that include VR override
+GetActiveEffectListNative. NonActorMagicTarget and MiddleHighProcessData
+activeEffects change type, and GetNthEffect now returns the nth effect.
+
+Co-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>
+* **VR:** hkbProjectStringData::rootPath is removed; the VR-only
+PlayerControls notifyingHandlers, blockPlayerInput, unk1DA and unk1DC are
+replaced by the VR handler pointers. VR sizes and offsets of the derived input
+handlers change.
+
+Co-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>
+* MapCameraStates::Transition::zoomOrigin is removed,
+MapMenu::AsIMapCameraCallbacks returns nullptr on VR, and the VR LocalMapMenu
+renderer data drops renderTarget and renderMode. VR sizes change for BSThread
+and subclasses, NiGeometryData, FaderData, ImageSpaceShaderParam and MapMenu.
+
+Co-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>
+* BSOcclusionBox::faces is replaced by corners and
+BSOcclusionPlane::frustum by frustumPlanes, VR BSCullingProcess gains
+ClearCollectedGeometry at slot 0x1A so TestBaseVisibility1-3 move up one slot
+there, and the NiAVObject VR layout is corrected.
+
+Co-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>
+* **frustum:** BSCompoundFrustum::functionOperators is now BSTArray<Operator>
+instead of BSTArray<void*>; code indexing it as an array of pointers no longer
+compiles.
+
+Co-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>
+* **package:** CreatePackage and SetPackType take PACKAGE_TYPE. Callers
+passing PACKAGE_PROCEDURE_TYPE no longer compile; each such call passed a
+value the engine reads as a different package type.
+
+Co-authored-by: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* `BSScript::Object::~Object` impl ([1730166](https://github.com/RavenKZP/CommonLibVR/commit/1730166ecab6e6d3d4b5411b62929d1cfd312e51))
+* **actor:** add ChangeHeadPart wrapper ([#375](https://github.com/RavenKZP/CommonLibVR/issues/375)) ([3ed84ea](https://github.com/RavenKZP/CommonLibVR/commit/3ed84ea498d915071659b1c0d6fdf7bab9da6345))
+* add AddCellGrassTask and related ([51233b7](https://github.com/RavenKZP/CommonLibVR/commit/51233b7390fe3800dac05586bf522f0e51843687))
+* add BSProceduralLightningController and related ([86dbefb](https://github.com/RavenKZP/CommonLibVR/commit/86dbefb1f43445045f1b2a1b9e4f0fbde90faed3))
+* add BSProceduralLightningTasklet and related ([dfae4a4](https://github.com/RavenKZP/CommonLibVR/commit/dfae4a4ded534cde5a986acb7e9c025e5ba1a53c))
+* add CombatBehavior classes ([8fd1ee2](https://github.com/RavenKZP/CommonLibVR/commit/8fd1ee25f4e93380471848df8dca15d4429fbfc1))
+* add CombatBehaviorTreeNode::Ctor ([d121ecf](https://github.com/RavenKZP/CommonLibVR/commit/d121ecf419077ba267cf76c096155b4a1c794832))
+* add more combat RE ([0e08b9a](https://github.com/RavenKZP/CommonLibVR/commit/0e08b9aef21e334e6b02a6e4d522576e2ebe14c7))
+* add more CombatBehaviorTree stuff ([92cf0c6](https://github.com/RavenKZP/CommonLibVR/commit/92cf0c6ee0309a28bd5ae19fcdde29fa76f46549))
+* **ae:** add CreateGrassParams 1.7.99 accessors ([#441](https://github.com/RavenKZP/CommonLibVR/issues/441)) ([ade595f](https://github.com/RavenKZP/CommonLibVR/commit/ade595f0019b01995f92dc5806cebacbca4edb35))
+* **bhkcollisionfilter:** add layer setters ([#434](https://github.com/RavenKZP/CommonLibVR/issues/434)) ([c041572](https://github.com/RavenKZP/CommonLibVR/commit/c0415723053e121eba320a789b657adcf2a90abf))
+* **bslodtrishape:** add LOD trishape classes ([#430](https://github.com/RavenKZP/CommonLibVR/issues/430)) ([b165458](https://github.com/RavenKZP/CommonLibVR/commit/b1654584a779bb64260cd8f7331f01bfd95e2762))
+* **BSShaderAccumulator:** add RENDER_FLAG enum ([#436](https://github.com/RavenKZP/CommonLibVR/issues/436)) ([c3aa47a](https://github.com/RavenKZP/CommonLibVR/commit/c3aa47adb4ca1afbfb6e067ce45ef95580489a3e))
+* **cmake:** publish a clang-cl prebuilt bundle ([#431](https://github.com/RavenKZP/CommonLibVR/issues/431)) ([58a0e61](https://github.com/RavenKZP/CommonLibVR/commit/58a0e611bf41653efad5aa3598327d10af4407f7))
+* fix NiSkinInstance::Create, add Dismember ([#384](https://github.com/RavenKZP/CommonLibVR/issues/384)) ([c23f062](https://github.com/RavenKZP/CommonLibVR/commit/c23f062b2c02e86b381408f80ecc89caa473fc66))
+* **frustum:** add BSCompoundFrustum operators ([#412](https://github.com/RavenKZP/CommonLibVR/issues/412)) ([c8f5c3b](https://github.com/RavenKZP/CommonLibVR/commit/c8f5c3bcb39a1ac060611c5a0cc2fab5b749a8f3))
+* **gfx:** add GFxCharEvent layout ([#362](https://github.com/RavenKZP/CommonLibVR/issues/362)) ([06ec1c5](https://github.com/RavenKZP/CommonLibVR/commit/06ec1c54b8bfe99249c5784f400b63b251c9ffa9))
+* **gfx:** name GFxMovieRoot focus/mouse fields ([#423](https://github.com/RavenKZP/CommonLibVR/issues/423)) ([45906d7](https://github.com/RavenKZP/CommonLibVR/commit/45906d787a6793d047f05ef03c198ffed847e94e))
+* **menutopic:** name seven unknown members ([#409](https://github.com/RavenKZP/CommonLibVR/issues/409)) ([e4b418b](https://github.com/RavenKZP/CommonLibVR/commit/e4b418bb681e52521d15bed94ab168585631dba0))
+* more grass RE ([4d48a4f](https://github.com/RavenKZP/CommonLibVR/commit/4d48a4f66b378e6af4f5fcdbc9849e3e847351db))
+* **niskinpartition:** name draw and bone setter ([#427](https://github.com/RavenKZP/CommonLibVR/issues/427)) ([f1cb1c9](https://github.com/RavenKZP/CommonLibVR/commit/f1cb1c95dcf35b14f42ff66aba0bfb548a8a5dc1))
+* projectile stuff ([4964b49](https://github.com/RavenKZP/CommonLibVR/commit/4964b49e5ed25ba9a3972ec9957187703c72ad2c))
+* **quest:** add UpdateCurrentInstanceGlobal ([#408](https://github.com/RavenKZP/CommonLibVR/issues/408)) ([95fd8d1](https://github.com/RavenKZP/CommonLibVR/commit/95fd8d1bf5f6c8da6f003862f06184513179011b))
+* RE BGSAcousticSpaceListener and related ([c30e6e6](https://github.com/RavenKZP/CommonLibVR/commit/c30e6e639007e43bba4cd05636fcc084bb68eaac))
+* **sky:** give SkyStaticRefData its members ([#447](https://github.com/RavenKZP/CommonLibVR/issues/447)) ([297e5cd](https://github.com/RavenKZP/CommonLibVR/commit/297e5cd0e224ef61d523a94f3b58da05ff911085))
+* **state:** add BuildCameraStateData ([#379](https://github.com/RavenKZP/CommonLibVR/issues/379)) ([ee6ebeb](https://github.com/RavenKZP/CommonLibVR/commit/ee6ebeb02a4575670015e19fe51992b7146145c7))
+* **TESObjectCELL:** name all CellState values ([#435](https://github.com/RavenKZP/CommonLibVR/issues/435)) ([20efc0d](https://github.com/RavenKZP/CommonLibVR/commit/20efc0de728e6badb7ee327ded1256d4a0d8c612))
+* **VR:** add VR handlers, correct type layouts ([#416](https://github.com/RavenKZP/CommonLibVR/issues/416)) ([b5dd12d](https://github.com/RavenKZP/CommonLibVR/commit/b5dd12dee701d3382560f9aaa91b85785ac30696))
+* **water:** add WaterFlag bits read by shader ([#440](https://github.com/RavenKZP/CommonLibVR/issues/440)) ([d3e6b5d](https://github.com/RavenKZP/CommonLibVR/commit/d3e6b5d7a33081aae8cbd64d569cd3ce0bd1510e))
+
+### Bug Fixes
+
+* **actor:** correct GetCurrentAmmo dispatch ([#377](https://github.com/RavenKZP/CommonLibVR/issues/377)) ([33e6a96](https://github.com/RavenKZP/CommonLibVR/commit/33e6a966001d8c86e52be6e2b38262e6c346353e))
+* **actor:** declare VR-only ModifyRotationZ ([#397](https://github.com/RavenKZP/CommonLibVR/issues/397)) ([9c6fe61](https://github.com/RavenKZP/CommonLibVR/commit/9c6fe616d06744a1c76e4371b07f2a7686616372))
+* **actor:** swap charge refresh ids ([#404](https://github.com/RavenKZP/CommonLibVR/issues/404)) ([008515e](https://github.com/RavenKZP/CommonLibVR/commit/008515e8e44cebd85a9050f37918f4ca7fb9670c))
+* **AE:** add 1.7 ids for two bindings ([#401](https://github.com/RavenKZP/CommonLibVR/issues/401)) ([6d61bd5](https://github.com/RavenKZP/CommonLibVR/commit/6d61bd546e9fdb16bb66b133b40b1ac9a68da462))
+* **AE:** add missing id for ObjectTypeInfo::ReleaseData ([#359](https://github.com/RavenKZP/CommonLibVR/issues/359)) ([34b21de](https://github.com/RavenKZP/CommonLibVR/commit/34b21de5b497098bdf7d41071fdd20abe4d027a4))
+* **bscullingprocess:** type AppendNonAccum arg ([#442](https://github.com/RavenKZP/CommonLibVR/issues/442)) ([c1aa3d9](https://github.com/RavenKZP/CommonLibVR/commit/c1aa3d9d8f3afed1dc28493b1c7ff820a1deb7d6))
+* **combatbehavior:** correct AE ids ([#390](https://github.com/RavenKZP/CommonLibVR/issues/390)) ([fc0ccee](https://github.com/RavenKZP/CommonLibVR/commit/fc0ccee34f5435993faaee185285e51c3a47ddee))
+* **combatbehavior:** handle AE-inlined functions ([#393](https://github.com/RavenKZP/CommonLibVR/issues/393)) ([fb8203e](https://github.com/RavenKZP/CommonLibVR/commit/fb8203e0d8a38c7e73ca71129e54c1437af7a2fd))
+* **combatbehaviortree:** bind the real constructor ([#389](https://github.com/RavenKZP/CommonLibVR/issues/389)) ([e8d43fb](https://github.com/RavenKZP/CommonLibVR/commit/e8d43fb3ab7388a8f4238cadb39cbd4ac2b24ff8))
+* compilation ([84b2e60](https://github.com/RavenKZP/CommonLibVR/commit/84b2e601174c39055c226743d5a1c4349c38f970))
+* correct container layouts and struct sizes ([#419](https://github.com/RavenKZP/CommonLibVR/issues/419)) ([59a636e](https://github.com/RavenKZP/CommonLibVR/commit/59a636e2b9a62799340364f49974b6d2aeabe4cb))
+* correct GetWaterFogPassList return type ([#373](https://github.com/RavenKZP/CommonLibVR/issues/373)) ([a212a90](https://github.com/RavenKZP/CommonLibVR/commit/a212a9095e9052b875e554e6dde5bd131b532c75))
+* correct occlusion, culling, portal layouts ([#420](https://github.com/RavenKZP/CommonLibVR/issues/420)) ([da406d7](https://github.com/RavenKZP/CommonLibVR/commit/da406d78849938c11da90f2ab1449f44439a82e1))
+* **decal:** name DECAL_CREATION_DATA fields ([#421](https://github.com/RavenKZP/CommonLibVR/issues/421)) ([f47074f](https://github.com/RavenKZP/CommonLibVR/commit/f47074fd1bfce89c707d2424ae9db20ac5ca7070))
+* **extradata:** define ExtraDataList ctor and dtor ([#424](https://github.com/RavenKZP/CommonLibVR/issues/424)) ([c053727](https://github.com/RavenKZP/CommonLibVR/commit/c0537271d661eb78800f36a1e768ff519728fb3b))
+* fix template ([da1a899](https://github.com/RavenKZP/CommonLibVR/commit/da1a89925983eb3c1c79de7979683b091a1f8d37))
+* **gfx:** correct GFxMovieRoot safeRect offset ([#425](https://github.com/RavenKZP/CommonLibVR/issues/425)) ([c0c965c](https://github.com/RavenKZP/CommonLibVR/commit/c0c965ce036c2da06a1900f10f72edef5e6e3637))
+* **gfx:** realign GFxASCharacter virtuals ([#422](https://github.com/RavenKZP/CommonLibVR/issues/422)) ([b0ff9ce](https://github.com/RavenKZP/CommonLibVR/commit/b0ff9ce38ba4a63de7058466f0539cac7a3d714d))
+* **inventory3d:** pass VR device to ToggleItemZoom ([#406](https://github.com/RavenKZP/CommonLibVR/issues/406)) ([bec5863](https://github.com/RavenKZP/CommonLibVR/commit/bec5863255c14231f55fe5918c11e4c57ba7131f))
+* **inventorychanges:** correct GetItemCount AE ID ([#387](https://github.com/RavenKZP/CommonLibVR/issues/387)) ([e56fab0](https://github.com/RavenKZP/CommonLibVR/commit/e56fab069ebf93e774a6965d44402f6b6e95ce3e))
+* **inventorychanges:** correct SetUniqueID AE ID ([#385](https://github.com/RavenKZP/CommonLibVR/issues/385)) ([724bf92](https://github.com/RavenKZP/CommonLibVR/commit/724bf92643d91587099bc9d4b3a2f1996605c13c))
+* **inventoryentrydata:** swap SetWorn SE/AE IDs ([#388](https://github.com/RavenKZP/CommonLibVR/issues/388)) ([ebfaf78](https://github.com/RavenKZP/CommonLibVR/commit/ebfaf786e765cf33b473c3b938e196a1430ad4fd))
+* **magiccaster:** correct PlayReleaseSound AE ID ([#394](https://github.com/RavenKZP/CommonLibVR/issues/394)) ([3a1fdf1](https://github.com/RavenKZP/CommonLibVR/commit/3a1fdf117f9f06f39a61649355c905be8c705643))
+* **magic:** correct ForEachActiveEffect ID ([#407](https://github.com/RavenKZP/CommonLibVR/issues/407)) ([ad0b9fc](https://github.com/RavenKZP/CommonLibVR/commit/ad0b9fc14cf617c25f5df73ffe8ee4f3698402fa))
+* **magic:** return the actor from GetTargetActor ([#382](https://github.com/RavenKZP/CommonLibVR/issues/382)) ([8702dcf](https://github.com/RavenKZP/CommonLibVR/commit/8702dcfd4d7445c0b3ceddee1668eb3edac3f58a))
+* **magic:** use real MagicTarget VR virtuals ([#417](https://github.com/RavenKZP/CommonLibVR/issues/417)) ([62a1936](https://github.com/RavenKZP/CommonLibVR/commit/62a19369356e73654d8c38d3a8f02fc6c345a17d))
+* merge ([32581d3](https://github.com/RavenKZP/CommonLibVR/commit/32581d3a9ada9892dd7339d4cc7fcf4abb869042))
+* move and rename Actor::IsLeveled ([dfb5aea](https://github.com/RavenKZP/CommonLibVR/commit/dfb5aeac200102c8939d6957c790983befa72333))
+* NiTimeController::Update vfunc ([8eff25e](https://github.com/RavenKZP/CommonLibVR/commit/8eff25e12bb3a2496acfa1ba1586eaf9d51a5b71))
+* **nitrishape:** move Unk_3B to NiTriShape ([#399](https://github.com/RavenKZP/CommonLibVR/issues/399)) ([3e61bdd](https://github.com/RavenKZP/CommonLibVR/commit/3e61bdd73a3867a058eefc7da69c25a19205ea87))
+* **package:** CreatePackage takes PACKAGE_TYPE ([#383](https://github.com/RavenKZP/CommonLibVR/issues/383)) ([2184d3f](https://github.com/RavenKZP/CommonLibVR/commit/2184d3f3d9abf6ccde5b41e75ddbd415d0b9cc28))
+* **papyrus:** invoke latent return type mapper ([#364](https://github.com/RavenKZP/CommonLibVR/issues/364)) ([43e19bb](https://github.com/RavenKZP/CommonLibVR/commit/43e19bb4f7ed1ebbc9f4c9d656bf89c4c0dcaeba))
+* pass missing arguments to six engine calls ([#402](https://github.com/RavenKZP/CommonLibVR/issues/402)) ([3100030](https://github.com/RavenKZP/CommonLibVR/commit/31000306ea96d1bf1fdcd14f5f45deb176a31cbb))
+* pass the extra arguments AE 1.7 and VR read ([#403](https://github.com/RavenKZP/CommonLibVR/issues/403)) ([7b38593](https://github.com/RavenKZP/CommonLibVR/commit/7b38593c08cdcaf60371bb7414ec4f2bd5c7d5f6))
+* **PlayerInputHandler:** correct VR vtable slots ([#443](https://github.com/RavenKZP/CommonLibVR/issues/443)) ([73e8f8c](https://github.com/RavenKZP/CommonLibVR/commit/73e8f8c78ad0c5dffdd2c2bac0bba5094b6b6781))
+* **PlayerInputHandler:** type AE gesture slots ([#444](https://github.com/RavenKZP/CommonLibVR/issues/444)) ([52d3a8e](https://github.com/RavenKZP/CommonLibVR/commit/52d3a8ee803a46916d9f3b8787989340229df9cd))
+* **player:** pass the skill advance context ([#405](https://github.com/RavenKZP/CommonLibVR/issues/405)) ([82f1550](https://github.com/RavenKZP/CommonLibVR/commit/82f155034be31aec56d7c8010d6121cfe173bb46))
+* **re:** correct BSTSmallSharedArray::empty() ([#361](https://github.com/RavenKZP/CommonLibVR/issues/361)) ([3c80256](https://github.com/RavenKZP/CommonLibVR/commit/3c802562ef39368cb4c9668796cf3bf6b675d94f))
+* restore LoadVertices arg, bound description ([9c391fc](https://github.com/RavenKZP/CommonLibVR/commit/9c391fcd920bed2929c24e64d1527e8af416e70a))
+* **scaleform:** use AE 1.6 id for IsValidName ([1736f41](https://github.com/RavenKZP/CommonLibVR/commit/1736f41d8c5f24c300014c6ac85ca3c75a9c3946))
+* **shadowstate:** fix constant offset type ([#378](https://github.com/RavenKZP/CommonLibVR/issues/378)) ([244562f](https://github.com/RavenKZP/CommonLibVR/commit/244562f77935996a184614896c16bc1f8cfcbdb5))
+* **spellslearned:** drop bogus Event::spell ([#438](https://github.com/RavenKZP/CommonLibVR/issues/438)) ([1893652](https://github.com/RavenKZP/CommonLibVR/commit/1893652aa2cc788741707171f782a5de03a01071))
+* stop two Dtor() calls freeing their object ([#395](https://github.com/RavenKZP/CommonLibVR/issues/395)) ([f298e23](https://github.com/RavenKZP/CommonLibVR/commit/f298e231d4958f27cacbbc1bd11dcc553b096a2b))
+* sync change with commonlibsse-ng ([2415cc9](https://github.com/RavenKZP/CommonLibVR/commit/2415cc998b611d3f0ac15fcfeadca9c83b1bf7f8))
+* template again ([84a6c39](https://github.com/RavenKZP/CommonLibVR/commit/84a6c39bbe1667ec0a2c43ed93736b233e33b5ae))
+* typo ([505f514](https://github.com/RavenKZP/CommonLibVR/commit/505f514053e5f03b1c435ea5412f4d6671e1b2d3))
+* virtual ArmorRatingVisitorBase dtor ([923eb94](https://github.com/RavenKZP/CommonLibVR/commit/923eb94bbec8ea269b3b89c883bfd7df14c47778))
+* **vr:** correct three virtual slots ([#396](https://github.com/RavenKZP/CommonLibVR/issues/396)) ([1fc6c44](https://github.com/RavenKZP/CommonLibVR/commit/1fc6c44a0c8a680a14905566d753d0ffcfb32124))
+* **vr:** route shifted virtuals through wrappers ([#398](https://github.com/RavenKZP/CommonLibVR/issues/398)) ([de4950e](https://github.com/RavenKZP/CommonLibVR/commit/de4950e6807f59b4dc1f782cc44ef90d364d4bd7))
+
 ## [14.0.0](https://github.com/alandtse/CommonLibSSE-NG/compare/v13.1.0...v14.0.0) (2026-10-24)
 
 ### ⚠ BREAKING CHANGES
